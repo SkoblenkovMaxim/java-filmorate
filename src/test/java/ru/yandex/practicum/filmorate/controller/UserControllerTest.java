@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -26,7 +26,7 @@ class UserControllerTest {
                 .email("user@example.com")
                 .login("userLogin")
                 .name("User Name")
-                .birthday(new Date())
+                .birthday(LocalDate.now())
                 .build();
 
         User createdUser = userController.createUser(newUser);
@@ -43,7 +43,7 @@ class UserControllerTest {
                 .email("user@example.com")
                 .login("existingLogin")
                 .name("Existing User")
-                .birthday(new Date())
+                .birthday(LocalDate.now())
                 .build();
 
         userController.createUser(existingUser);
@@ -52,7 +52,7 @@ class UserControllerTest {
                 .email("user@example.com")
                 .login("newLogin")
                 .name("New User")
-                .birthday(new Date())
+                .birthday(LocalDate.now())
                 .build();
 
         Exception exception = assertThrows(ValidationException.class, () -> {
@@ -68,7 +68,7 @@ class UserControllerTest {
                 .email("user@example.com")
                 .login("userLogin")
                 .name("User Name")
-                .birthday(new Date())
+                .birthday(LocalDate.now())
                 .build();
 
         userController.createUser(existingUser);
@@ -77,7 +77,7 @@ class UserControllerTest {
                 .id(existingUser.getId())
                 .email("updated@example.com")
                 .login("updatedLogin")
-                .name("Updated User").birthday(new Date())
+                .name("Updated User").birthday(LocalDate.now())
                 .build();
 
         User updatedUser = userController.updateUser(updateUser);
@@ -94,7 +94,7 @@ class UserControllerTest {
                 .email("updated@example.com")
                 .login("updatedLogin")
                 .name("Updated User")
-                .birthday(new Date())
+                .birthday(LocalDate.now())
                 .build();
 
         Exception exception = assertThrows(ValidationException.class, () -> {
@@ -110,14 +110,14 @@ class UserControllerTest {
                 .email("user1@example.com")
                 .login("userLogin1")
                 .name("User One")
-                .birthday(new Date())
+                .birthday(LocalDate.now())
                 .build();
 
         User user2 = User.builder()
                 .email("user2@example.com")
                 .login("userLogin2")
                 .name("User Two")
-                .birthday(new Date())
+                .birthday(LocalDate.now())
                 .build();
 
         userController.createUser(user1);

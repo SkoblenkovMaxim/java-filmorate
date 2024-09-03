@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +30,9 @@ public class FilmController {
     @PostMapping("/films")
     public Film addFilm(@Valid @RequestBody Film newFilm) {
         newFilm.setId(countIdFilm());
-        newFilm.setReleaseDate(Instant.now());
+        if (newFilm.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
+            throw new ValidationException("Дата релиза фильма не должна быть ранее 28 декабря 1895 год");
+        }
         allFilms.put(newFilm.getId(), newFilm);
         return newFilm;
     }
@@ -43,6 +45,7 @@ public class FilmController {
         }
         if (allFilms.containsKey(newFilm.getId())) {
             Film oldFilm = allFilms.get(newFilm.getId());
+            oldFilm.setName(newFilm.getName());
             oldFilm.setDescription(newFilm.getDescription());
             return oldFilm;
         }

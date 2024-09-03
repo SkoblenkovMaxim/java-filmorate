@@ -7,8 +7,7 @@ import org.mockito.MockitoAnnotations;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.time.Duration;
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Collection;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,8 +25,8 @@ class FilmControllerTest {
         film = Film.builder()
                 .name("Test Film")
                 .description("This is a test film")
-                .releaseDate(Instant.now().plusSeconds(1)) // future date
-                .duration(Duration.ofMinutes(120))
+                .releaseDate(LocalDate.now()) // future date
+                .duration(120)
                 .build();
     }
 
@@ -50,8 +49,8 @@ class FilmControllerTest {
                 .id(filmId)
                 .name("Updated Film")
                 .description("Updated description")
-                .releaseDate(Instant.now().plusSeconds(1))
-                .duration(Duration.ofMinutes(90))
+                .releaseDate(LocalDate.now())
+                .duration(90)
                 .build();
 
         Film updatedFilm = filmController.updateFilm(updateFilm);
@@ -66,8 +65,8 @@ class FilmControllerTest {
                 .id(999L) // Non-existent film id
                 .name("Non-existent Film")
                 .description("This film does not exist")
-                .releaseDate(Instant.now().plusSeconds(1))
-                .duration(Duration.ofMinutes(90))
+                .releaseDate(LocalDate.now())
+                .duration(90)
                 .build();
 
         ValidationException thrown = assertThrows(ValidationException.class, () -> {

@@ -35,6 +35,9 @@ public class UserController {
         }
 
         newUser.setId(countIdUser());
+        if (newUser.getName() == null) {
+            newUser.setName(newUser.getLogin());
+        }
         allUsers.put(newUser.getId(), newUser);
         return newUser;
     }
@@ -42,7 +45,7 @@ public class UserController {
     // Обновление пользователя
     @PutMapping("/users")
     public User updateUser(@Valid @RequestBody User newUser) {
-        if (newUser.getName().isBlank() || newUser.getName().isEmpty()) {
+        if (newUser.getName().isEmpty()) {
             log.error("Имя не может быть null");
         }
         if (allUsers.containsKey(newUser.getId())) {
