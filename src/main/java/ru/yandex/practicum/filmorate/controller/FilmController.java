@@ -46,7 +46,9 @@ public class FilmController {
         if (allFilms.containsKey(newFilm.getId())) {
             Film oldFilm = allFilms.get(newFilm.getId());
             oldFilm.setName(newFilm.getName());
+            oldFilm.setReleaseDate(newFilm.getReleaseDate());
             oldFilm.setDescription(newFilm.getDescription());
+            oldFilm.setDuration(newFilm.getDuration());
             return oldFilm;
         }
         throw new ValidationException("Фильм " + newFilm.getId() + " - " + newFilm.getName() + " не найден");
