@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
@@ -31,6 +32,7 @@ class FilmControllerTest {
     }
 
     @Test
+    @DisplayName("Add film")
     void addFilm_ShouldAddFilmAndReturnIt() {
         Film addedFilm = filmController.addFilm(film);
 
@@ -41,6 +43,75 @@ class FilmControllerTest {
     }
 
     @Test
+    @DisplayName("Added film not name")
+    void addFilm_ShouldAddFilmNotName() {
+        Film addedFilmNotName = Film.builder()
+                .id(1L)
+                //.name("")
+                .description("Test film description")
+                .releaseDate(LocalDate.now())
+                .duration(90)
+                .build();
+
+        ValidationException thrown = assertThrows(ValidationException.class, () -> {
+            filmController.addFilm(addedFilmNotName);
+        });
+        assertThat(thrown.getMessage()).contains("Название фильма не может быть пустым");
+    }
+
+    @Test
+    @DisplayName("Added film not description")
+    void addFilm_ShouldAddFilmNotDescription() {
+        Film addedFilmNotDescription = Film.builder()
+                .id(1L)
+                .name("Test film name")
+                .description("")
+                .releaseDate(LocalDate.now())
+                .duration(90)
+                .build();
+
+        ValidationException thrown = assertThrows(ValidationException.class, () -> {
+            filmController.addFilm(addedFilmNotDescription);
+        });
+        assertThat(thrown.getMessage()).contains("Должно быть добавлено описание фильма");
+    }
+
+    @Test
+    @DisplayName("Added film release 1894")
+    void addFilm_ShouldAddFilmReleaseFilm1894() {
+        Film addedFilmRelease = Film.builder()
+                .id(1L)
+                .name("Test film name")
+                .description("Test film description")
+                .releaseDate(LocalDate.of(1894, 12, 28))
+                .duration(90)
+                .build();
+
+        ValidationException thrown = assertThrows(ValidationException.class, () -> {
+            filmController.addFilm(addedFilmRelease);
+        });
+        assertThat(thrown.getMessage()).contains("Дата релиза фильма не должна быть ранее 28 декабря 1895 год");
+    }
+
+    @Test
+    @DisplayName("Added film zero duration")
+    void addFilm_ShouldAddFilm0Duration() {
+        Film addedFilmDuration = Film.builder()
+                .id(1L)
+                .name("Test film name")
+                .description("Test film description")
+                .releaseDate(LocalDate.now())
+                .duration(0)
+                .build();
+
+        ValidationException thrown = assertThrows(ValidationException.class, () -> {
+            filmController.addFilm(addedFilmDuration);
+        });
+        assertThat(thrown.getMessage()).contains("Продолжительность фильма должна быть больше ноля");
+    }
+
+    @Test
+    @DisplayName("Updated film")
     void updateFilm_ShouldUpdateExistingFilm() {
         Film addedFilm = filmController.addFilm(film);
         Long filmId = addedFilm.getId();
