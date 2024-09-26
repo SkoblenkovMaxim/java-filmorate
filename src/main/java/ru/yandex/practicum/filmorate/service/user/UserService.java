@@ -56,6 +56,7 @@ public class UserService {
         log.info("Пользователь с id={} добавлен в список ваших друзей", friendId);
         return userStorage.getUserById(userId);
     }
+
     // удаление из друзей
     public void deleteFriend(Long userId, Long friendId) {
         if (friendsList.get(userId).contains(friendId)) {
