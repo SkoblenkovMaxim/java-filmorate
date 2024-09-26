@@ -1,12 +1,15 @@
 package ru.yandex.practicum.filmorate.storage.like;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class LikeStorage {
     // Хранилище ид пользователя и списка фильмов, которые он лайкнул
@@ -36,20 +39,27 @@ public class LikeStorage {
                 }
             }
         }
+        log.debug("Пользователь с id={} не ставил лайки", userId);
+        throw new NotFoundException("Пользователя нет в списке фильмов, отмеченных лайками");
     }
 
     // Вывод популярных фильмов
     public List<Film> getPopular(Integer count) {
-        // Сортируем фильмы по количеству лайков в порядке убывания и получаем топ count
-        List<Film> popularFilms = likesUser.entrySet()
-                .stream()
-                .sorted(Map.Entry.<Long, Long>comparingByValue().reversed())
-                .limit(count)
-                .map(entry -> getFilmById(entry.getKey()))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
 
-        return popularFilms;
+        if (!likesUser.isEmpty()) {
+            List<Film> popularFilms = likesUser.entrySet()
+                    .stream()
+                    .sorted(Map.Entry.<Long, Long>comparingByValue().reversed())
+                    .limit(count)
+                    .map(entry -> getFilmById(entry.getKey()))
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
+            return popularFilms;
+        }
+
+        log.debug("Список фильмов с лайками пуст");
+        throw new NotFoundException("Список фильмов с лайками пуст");
     }
 
     // Получение количества лайков фильма
