@@ -2,13 +2,11 @@ package ru.yandex.practicum.filmorate.service.film;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.like.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -21,13 +19,6 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
     private final LikeStorage likeStorage;
-
-    @Autowired
-    public FilmService(InMemoryFilmStorage inMemoryFilmStorage, FilmStorage filmStorage, UserStorage userStorage, LikeStorage likeStorage) {
-        this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
-        this.likeStorage = likeStorage;
-    }
 
     // добавление лайка
     public void addLike(Long filmId, Long userId) {
@@ -42,6 +33,7 @@ public class FilmService {
             throw new NotFoundException("Фильм c ID=" + filmId + " не найден!");
         }
     }
+
     // удаление лайка
     public void removeLike(Long filmId, Long userId) {
         Film film = filmStorage.getFilm(filmId);
@@ -55,10 +47,11 @@ public class FilmService {
             throw new NotFoundException("Фильм c ID=" + filmId + " не найден!");
         }
     }
+
     // вывод 10 наиболее популярных фильмов по количеству лайков
     public List<Film> getTopFilms(Integer count) {
         if (count < 1) {
-            new ValidationException("Количество фильмов для вывода не должно быть меньше 1");
+            throw new ValidationException("Количество фильмов для вывода не должно быть меньше 1");
         }
         return likeStorage.getPopular(count);
     }
