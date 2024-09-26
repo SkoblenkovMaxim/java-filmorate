@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.model;
+package ru.yandex.practicum.filmorate.model.film;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Builder
 @Getter
@@ -22,4 +23,5 @@ public class Film {
     private LocalDate releaseDate; // дата релиза
     @Positive(message = "Продолжительность фильма не может быть отрицательным значением")
     private int duration; // продолжительность фильма
+    private Set<Long> likes;
 }

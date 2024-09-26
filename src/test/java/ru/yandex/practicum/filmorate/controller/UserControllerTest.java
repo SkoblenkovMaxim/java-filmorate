@@ -3,8 +3,10 @@ package ru.yandex.practicum.filmorate.controller;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import ru.yandex.practicum.filmorate.controller.user.UserController;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.user.User;
+import ru.yandex.practicum.filmorate.service.user.UserService;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -14,10 +16,11 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("Проверка класса-контроллера пользователя")
 class UserControllerTest {
     private UserController userController;
+    private UserService userService;
 
     @BeforeEach
     void setUp() {
-        userController = new UserController();
+        userController = new UserController(userService);
     }
 
     @Test
@@ -123,7 +126,7 @@ class UserControllerTest {
         userController.createUser(user1);
         userController.createUser(user2);
 
-        Collection<User> users = userController.getAllUsers();
+        Collection<User> users = userController.getUsers();
 
         assertNotNull(users);
         assertEquals(2, users.size());
