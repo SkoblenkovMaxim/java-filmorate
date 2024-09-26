@@ -1,21 +1,26 @@
 package ru.yandex.practicum.filmorate.service.user;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.user.User;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.*;
 
 @Slf4j
-@RequiredArgsConstructor
 @Service
 public class UserService {
     private final UserStorage userStorage;
     private final Map<Long, Set<Long>> friendsList = new HashMap<>(); // Список друзей
+
+    public UserService() {
+        userStorage = new InMemoryUserStorage();
+    }
+
 
     public User createUser(User user) {
         return userStorage.createUser(user);
@@ -38,7 +43,11 @@ public class UserService {
     }
 
     // добавление в друзья
-    public User addFriends(Long userId, Long friendId) {
+    public void addFriends(Long userId, Long friendId) {
+        if (userId.equals(friendId)) {
+            log.debug("Нельзя добавить самого себя в друзья");
+            throw new ValidationException("Нельзя добавить самого себя в друзья");
+        }
         if (userStorage.getUserById(friendId) == null) {
             log.debug("Пользователь с id={} не найден", friendId);
             throw new NotFoundException("Пользователь не найден");
@@ -54,17 +63,19 @@ public class UserService {
         }
         friendsList.get(userId).add(friendId);
         log.info("Пользователь с id={} добавлен в список ваших друзей", friendId);
-        return userStorage.getUserById(userId);
+        friendsList.get(friendId).add(userId);
+        log.info("Вы теперь друзья с id={}", userId);
     }
 
     // удаление из друзей
     public void deleteFriend(Long userId, Long friendId) {
-        if (friendsList.get(userId).contains(friendId)) {
-            friendsList.get(userId).remove(friendId);
-            log.info("Пользователь с id={} удален из списка ваших друзей", friendId);
-        }
-        if (!friendsList.containsKey(userId)) {
-            log.debug("Пользователь {} не найден", friendId);
+        if (friendsList.containsKey(userId)) {
+            if (friendsList.get(userId).contains(friendId)) {
+                friendsList.get(userId).remove(friendId);
+                log.info("Пользователь с id={} удален из списка ваших друзей", friendId);
+            }
+        } else {
+            log.debug("Пользователь не найден");
             throw new NotFoundException("Пользователь не найден");
         }
     }

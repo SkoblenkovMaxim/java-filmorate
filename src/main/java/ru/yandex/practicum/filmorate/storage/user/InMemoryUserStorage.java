@@ -24,6 +24,9 @@ public class InMemoryUserStorage implements UserStorage {
     private final Map<Long, User> allUsers = new HashMap<>();
     private IdGenerator idGenerator = new IdGenerator();
 
+    public InMemoryUserStorage() {
+    }
+
     public InMemoryUserStorage(IdGenerator idGenerator) {
         this.idGenerator = idGenerator;
     }
@@ -50,6 +53,7 @@ public class InMemoryUserStorage implements UserStorage {
     public User updateUser(@Valid @RequestBody User newUser) {
         if (newUser.getName().isEmpty()) {
             log.error("Имя не может быть null");
+            throw new ValidationException("Имя не может быть null");
         }
         if (allUsers.containsKey(newUser.getId())) {
             User oldUser = allUsers.get(newUser.getId());
@@ -67,6 +71,7 @@ public class InMemoryUserStorage implements UserStorage {
             }
             return oldUser;
         }
+        log.debug("id={} не найден", newUser.getId());
         throw new ValidationException("id " + newUser.getId() + " не найден");
     }
 
