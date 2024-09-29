@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.controller.film;
 
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.film.Film;
@@ -10,19 +12,16 @@ import java.util.List;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/films")
 public class FilmController {
-    private  final FilmService filmService;
 
-    public FilmController(FilmService filmService) {
-        this.filmService = filmService;
-    }
+    private final FilmService filmService;
 
     // Добавление фильма
     @PostMapping
-    public Film addFilm(@RequestBody Film film) {
-        filmService.saveFilm(film);
-        return film;
+    public Film addFilm(@Valid @RequestBody Film film) {
+        return filmService.saveFilm(film);
     }
 
     // Обновление фильма
@@ -47,11 +46,10 @@ public class FilmController {
         filmService.removeLike(filmId, userId);
     }
 
-    @GetMapping("/popular?count={count}")
-    public List<Film> getTopFilms(
-            @RequestParam(required = false, defaultValue = "10")
-            @PathVariable Integer count) {
-        return filmService.getTopFilms(count);
+    //@GetMapping("/popular?count={count}")
+    @GetMapping("/popular")
+    public List<Film> getPopular(@RequestParam("count") Integer count) {
+        return filmService.getPopular(count);
     }
 
     @DeleteMapping

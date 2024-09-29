@@ -1,22 +1,30 @@
 package ru.yandex.practicum.filmorate.controller.user;
 
+import java.util.Collection;
+import java.util.List;
+
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 
-import java.util.Collection;
-
 @Slf4j
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    private final UserService userService;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
+    private final UserService userService;
 
     @PostMapping
     public User createUser(@Valid @RequestBody User user) {
@@ -48,7 +56,7 @@ public class UserController {
         userService.addFriends(userId, friendId);
     }
 
-    @GetMapping("/{userId}/friends/{friendId}")
+    @DeleteMapping("/{userId}/friends/{friendId}")
     public void deleteFriend(@PathVariable Long userId, @PathVariable Long friendId) {
         userService.deleteFriend(userId, friendId);
     }
@@ -56,5 +64,10 @@ public class UserController {
     @GetMapping("/{userId}/friends")
     public Collection<User> getAllFriends(@PathVariable Long userId) {
         return userService.getAllFriends(userId);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {
+        return userService.getCommonFriends(id, otherId);
     }
 }

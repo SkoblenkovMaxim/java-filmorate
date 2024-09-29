@@ -1,39 +1,31 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
-import jakarta.validation.Valid;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.service.IdGenerator;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
 @Slf4j
+@RequiredArgsConstructor
 @Component
 public class InMemoryUserStorage implements UserStorage {
+
     @Getter
     private final Map<Long, User> allUsers = new HashMap<>();
-    private IdGenerator idGenerator = new IdGenerator();
 
-    public InMemoryUserStorage() {
-    }
-
-    public InMemoryUserStorage(IdGenerator idGenerator) {
-        this.idGenerator = idGenerator;
-    }
+    private final IdGenerator idGenerator;
 
     // Создание пользователя
-    @PostMapping("/users")
-    public User createUser(@Valid @RequestBody User newUser) {
+    public User createUser(User newUser) {
         if (allUsers.values().stream()
                 .anyMatch(user -> user.getEmail().equals(newUser.getEmail()))) {
             log.error("Этот email уже используется");
@@ -49,8 +41,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     // Обновление пользователя
-    @PutMapping("/users")
-    public User updateUser(@Valid @RequestBody User newUser) {
+    public User updateUser(User newUser) {
         if (newUser.getName().isEmpty()) {
             log.error("Имя не может быть null");
             throw new ValidationException("Имя не может быть null");
@@ -72,17 +63,15 @@ public class InMemoryUserStorage implements UserStorage {
             return oldUser;
         }
         log.debug("id={} не найден", newUser.getId());
-        throw new ValidationException("id " + newUser.getId() + " не найден");
+        throw new NotFoundException("id " + newUser.getId() + " не найден");
     }
 
     // Получение списка всех пользователей
-    @GetMapping("/users")
     public Collection<User> getUsers() {
         return allUsers.values();
     }
 
     // Получение пользователя по id
-    @GetMapping("/users")
     public User getUserById(Long userId) {
         if (allUsers.containsKey(userId)) {
             return allUsers.get(userId);
@@ -92,7 +81,6 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     // Удаление пользователя
-    @GetMapping("/users")
     public void removeUser(User user) {
         if (allUsers.containsKey(user.getId())) {
             allUsers.remove(user.getId(), user);

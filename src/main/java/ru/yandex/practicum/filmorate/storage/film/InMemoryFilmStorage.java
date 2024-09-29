@@ -17,30 +17,29 @@ import java.util.*;
 @RequiredArgsConstructor
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
-    private IdGenerator idGenerator = new IdGenerator();
+
+    private final IdGenerator idGenerator = new IdGenerator();
+
     private final Map<Long, Film> films = new HashMap<>();
 
-    public InMemoryFilmStorage(IdGenerator idGenerator) {
-        this.idGenerator = idGenerator;
-    }
-
-    @PostMapping("/films")
-    public Film saveFilm(@Valid @RequestBody Film newFilm) {
+    public Film saveFilm(Film newFilm) {
         newFilm.setId(idGenerator.getNextId());
 
-        if (newFilm.getName() == null || newFilm.getName().isEmpty() || newFilm.getName().isBlank()) {
+        if (newFilm.getName() == null || newFilm.getName().isEmpty()) {
             log.error("Название фильма не может быть пустым");
             throw new ValidationException("Название фильма не может быть пустым");
         }
+
         if (newFilm.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
             log.error("Дата релиза фильма не должна быть ранее 28 декабря 1895 год");
             throw new ValidationException("Дата релиза фильма не должна быть ранее 28 декабря 1895 год");
         }
-        if (newFilm.getDescription() == null || newFilm.getDescription().isEmpty()
-                || newFilm.getDescription().isBlank()) {
+
+        if (newFilm.getDescription() == null || newFilm.getDescription().isEmpty()) {
             log.error("Должно быть добавлено описание фильма");
             throw new ValidationException("Должно быть добавлено описание фильма");
         }
+
         if (newFilm.getDuration() <= 0) {
             log.error("Продолжительность фильма должна быть больше ноля");
             throw new ValidationException("Продолжительность фильма должна быть больше ноля");
@@ -51,8 +50,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         return newFilm;
     }
 
-    @DeleteMapping("/films")
-    public Film removeFilm(@Valid @RequestBody Film film) {
+    public Film removeFilm(Film film) {
         if (films.containsKey(film.getId())) {
             films.remove(film.getId());
             log.debug("Фильм {} успешно удален", film.getName());
@@ -61,8 +59,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         throw new ValidationException("Фильм не найден");
     }
 
-    @PutMapping("/films")
-    public Film updateFilm(@Valid @RequestBody Film film) {
+    public Film updateFilm(Film film) {
         if (film.getId() == null) {
             log.error("Должен быть указан id фильма");
             throw new ValidationException("Должен быть указан id фильма");
@@ -87,8 +84,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         throw new NotFoundException("Фильм " + film.getId() + " - " + film.getName() + " не найден");
     }
 
-    @GetMapping("/films/{filmId}")
-    public Film getFilm(@Valid @RequestBody Long filmId) {
+    public Film getFilm(Long filmId) {
         if (films.containsKey(filmId)) {
             return films.get(filmId);
         }
@@ -96,7 +92,6 @@ public class InMemoryFilmStorage implements FilmStorage {
         throw new NotFoundException("Фильм с id=" + filmId + " не найден");
     }
 
-    @GetMapping("/films")
     public Collection<Film> getFilms() {
         return films.values();
     }

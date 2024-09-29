@@ -24,4 +24,8 @@ public class Film {
     @Positive(message = "Продолжительность фильма не может быть отрицательным значением")
     private int duration; // продолжительность фильма
     private Set<Long> likes;
+
+//    public Long getLikes() {
+//        return likes++;
+//    }
 }
