@@ -55,58 +55,9 @@ public class LikeStorage {
 
         log.info("Фильм {} добавлен в хранилище лайков", filmId);
 
-        //Film film = filmStorage.getFilm(filmId);
-//        if (film == null && userStorage.getUserById(userId) == null) {
-//            log.info("Пользователь {} или фильм {} не найден", filmId, userId);
-//            throw new NotFoundException("Пользователь или фильм не найден");
-//        }
-
-//        if (likesFilm.containsKey(userId) && likesFilm.get(userId).contains(filmId)) {
-//            log.debug("Пользователь {} уже лайкнул фильм {}", userId, filmId);
-//            throw new ValidationException("Пользователь уже лайкнул фильм");
-//        }
-
-//        if (film.getLikes().contains(userId)) {
-//            log.debug("Пользователь {} уже лайкнул фильм {}", userId, film.getId());
-//            throw new ValidationException("Пользователь уже лайкнул фильм");
-//        }
-
-//        if (!likesFilm.containsKey(userId)) {
-//            //likesFilm.get(userId).add(filmId);
-//            likesFilm.put(userId, new ArrayList<>());
-//            log.info("Фильм {} добавлен в хранилище лайков", filmId);
-//            //likesFilm.computeIfAbsent(userId, k -> new ArrayList<>()).add(filmId);
-//        }
-//
-//        if (!likesUser.containsKey(filmId)) {
-//            likesUser.put(filmId, 0);
-//        }
-//
-//        if (film != null) {
-//            film.setLikes(new HashSet<>());
-//        }
-
-        //likesFilm.get(userId).add(filmId);
-//        likesFilm.computeIfAbsent(userId, k -> new ArrayList<>()).add(filmId);
-
-
-//        if (!likesUser.containsKey(filmId)) {
-//            if (film != null) {
-//                likesUser.put(filmId, 0L);
-//                film.setLikes(new HashSet<>());
-//
-//                log.info("Фильм {} добавлен в хранилище лайков", filmId);
-//            }
-//        }
-        // Добавляем лайк в список лайков пользователя
-//        likesFilm.computeIfAbsent(userId, k -> new ArrayList<>()).add(filmId);
-
-        //film.getLikes().add(userId);
         // Увеличиваем количество лайков для фильма
         likesUser.put(filmId, film.getLikes().size());
-//        film.getLikes().add(userId);
         log.info("Количество лайков фильма {} = {}", filmId, likesUser.get(filmId));
-//        log.info("Количество лайков фильма {} = {}", filmId, film.getLikes().size());
     }
 
     public void deleteLike(Long filmId, Long userId) {
@@ -124,32 +75,12 @@ public class LikeStorage {
             throw new NotFoundException("Фильма нет в списке фильмов, отмеченных лайками");
         }
 
-//        if (!likesUser.containsKey(filmId)) {
-//            log.debug("Фильм {} не найден в хранилище лайков", filmId);
-//            throw new NotFoundException("Фильма нет в списке фильмов, отмеченных лайками");
-//        }
-
         // Удаляем фильм из списка фильмов с лайками пользователя
         likesFilm.get(userId).remove(filmId);
 
         // Уменьшаем количество лайков для фильма
         likesUser.put(filmId, likesUser.get(filmId) - 1);
         film.getLikes().remove(userId);
-
-        // Проверяем, существует ли пользователь в хранилище лайков
-//        if (likesFilm.containsKey(userId)) {
-//            List<Long> userLikes = likesFilm.get(userId);
-//            if (userLikes.remove(filmId)) {
-//                // Уменьшаем количество лайков для фильма
-//                likesUser.put(filmId, likesUser.get(filmId) - 1);
-//                // Если количество лайков стало 0
-//                if (likesUser.get(filmId) <= 0) {
-//                    likesUser.remove(filmId);
-//                }
-//            }
-//        }
-//        log.debug("Пользователь с id={} не ставил лайки", userId);
-//        throw new NotFoundException("Пользователя нет в списке фильмов, отмеченных лайками");
     }
 
     // Вывод популярных фильмов

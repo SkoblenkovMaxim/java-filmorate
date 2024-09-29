@@ -20,7 +20,6 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
     private final LikeStorage likeStorage;
-    private final Set<Long> listLikes = new HashSet<>();
 
     // добавление лайка
     public void addLike(Long filmId, Long userId) {
