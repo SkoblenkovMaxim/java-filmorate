@@ -62,8 +62,8 @@ public class FilmService {
         return filmStorage.saveFilm(newFilm);
     }
 
-    public Film removeFilm(Film film) {
-        return filmStorage.removeFilm(film);
+    public void removeFilm(Long filmId) {
+        filmStorage.removeFilm(filmId);
     }
 
     public Film updateFilm(Film film) {

@@ -8,7 +8,7 @@ public interface FilmStorage {
 
     Film saveFilm(Film film); // добавление фильма
 
-    Film removeFilm(Film film); // удаление фильма
+    void removeFilm(Long filmId); // удаление фильма
 
     Film updateFilm(Film film); //модификация, обновление фильма
 

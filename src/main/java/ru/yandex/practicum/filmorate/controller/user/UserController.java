@@ -46,9 +46,9 @@ public class UserController {
         return userService.getUserById(userId);
     }
 
-    @DeleteMapping
-    public void removeUser(User user) {
-        userService.removeUser(user);
+    @DeleteMapping("/{userId}")
+    public void removeUser(Long userId) {
+        userService.removeUser(userId);
     }
 
     @PutMapping("/{userId}/friends/{friendId}")

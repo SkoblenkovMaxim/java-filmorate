@@ -46,7 +46,7 @@ public class InMemoryUserStorage implements UserStorage {
             log.error("Имя не может быть null");
             throw new ValidationException("Имя не может быть null");
         }
-        if (allUsers.containsKey(newUser.getId())) {
+        if (isValidUser(newUser.getId())) {
             User oldUser = allUsers.get(newUser.getId());
             if (newUser.getEmail() != null) {
                 oldUser.setEmail(newUser.getEmail());
@@ -73,7 +73,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     // Получение пользователя по id
     public User getUserById(Long userId) {
-        if (allUsers.containsKey(userId)) {
+        if (isValidUser(userId)) {
             return allUsers.get(userId);
         }
         log.debug("Пользователь с id={} не найден", userId);
@@ -81,12 +81,16 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     // Удаление пользователя
-    public void removeUser(User user) {
-        if (allUsers.containsKey(user.getId())) {
-            allUsers.remove(user.getId(), user);
+    public void removeUser(Long userId) {
+        if (isValidUser(userId)) {
+            allUsers.remove(userId, allUsers.get(userId));
         } else {
-            log.debug("Пользователь {} не найден", user.getName());
+            log.debug("Пользователь {} не найден", allUsers.get(userId).getName());
             throw new NotFoundException("Пользователь не найден");
         }
+    }
+
+    public boolean isValidUser(Long userId) {
+        return allUsers.containsKey(userId);
     }
 }

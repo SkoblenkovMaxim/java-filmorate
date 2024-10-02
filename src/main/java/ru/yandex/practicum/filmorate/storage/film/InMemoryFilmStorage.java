@@ -48,10 +48,10 @@ public class InMemoryFilmStorage implements FilmStorage {
         return newFilm;
     }
 
-    public Film removeFilm(Film film) {
-        if (films.containsKey(film.getId())) {
-            films.remove(film.getId());
-            log.debug("Фильм {} успешно удален", film.getName());
+    public void removeFilm(Long filmId) {
+        if (isValidFilm(filmId)) {
+            films.remove(filmId);
+            log.debug("Фильм {} успешно удален", films.get(filmId).getName());
         }
         log.error("Фильм не найден");
         throw new ValidationException("Фильм не найден");
@@ -62,7 +62,7 @@ public class InMemoryFilmStorage implements FilmStorage {
             log.error("Должен быть указан id фильма");
             throw new ValidationException("Должен быть указан id фильма");
         }
-        if (films.containsKey(film.getId())) {
+        if (isValidFilm(film.getId())) {
             Film oldFilm = films.get(film.getId());
             if (film.getName() != null) {
                 oldFilm.setName(film.getName());
@@ -83,7 +83,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     public Film getFilm(Long filmId) {
-        if (films.containsKey(filmId)) {
+        if (isValidFilm(filmId)) {
             return films.get(filmId);
         }
         log.debug("Фильм с id={} не найден", filmId);
@@ -92,5 +92,9 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     public Collection<Film> getFilms() {
         return films.values();
+    }
+
+    public boolean isValidFilm(Long filmId) {
+        return films.containsKey(filmId);
     }
 }

@@ -52,9 +52,9 @@ public class FilmController {
         return filmService.getPopular(count);
     }
 
-    @DeleteMapping
-    public Film removeFilm(Film film) {
-        return filmService.removeFilm(film);
+    @DeleteMapping("/{filmId}")
+    public void removeFilm(@PathVariable Long filmId) {
+        filmService.removeFilm(filmId);
     }
 
     @GetMapping("/{filmId}")

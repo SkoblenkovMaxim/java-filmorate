@@ -45,8 +45,8 @@ public class UserService {
         return userStorage.getUserById(userId);
     }
 
-    public void removeUser(User user) {
-        userStorage.removeUser(user);
+    public void removeUser(Long userId) {
+        userStorage.removeUser(userId);
     }
 
     // добавление в друзья
@@ -115,15 +115,25 @@ public class UserService {
 
     // вывод списка общих друзей
     public List<User> getCommonFriends(Long firstUserId, Long secondUserId) {
+        List<User> firstUser = (List<User>) getAllFriends(firstUserId);
+        List<User> secondUser = (List<User>) getAllFriends(secondUserId);
+        List<User> commonFriends = new ArrayList<>();
 
-        User firstUser = userStorage.getUserById(firstUserId);
-        User secondUser = userStorage.getUserById(secondUserId);
-        Set<User> intersection = null;
-
-        if ((firstUser != null) && (secondUser != null)) {
-            intersection = new HashSet<>(getAllFriends(firstUserId));
-            intersection.retainAll(getAllFriends(secondUserId));
+        if (isValidUser(firstUserId) || isValidUser(secondUserId)) {
+            log.debug("Пользователь с id={} не найден", firstUserId);
+            throw new NotFoundException("Пользователь с id=" + firstUserId + " не найден");
         }
-        return new ArrayList<>(intersection);
+        log.info("Получение списка общих друзей пользователей {} и {}", firstUserId, secondUserId);
+        for (User user : firstUser) {
+            if (secondUser.contains(user)) {
+                commonFriends.add(user);
+            }
+        }
+        return commonFriends;
+    }
+
+    // Проверка наличия пользователя в хранилище
+    public boolean isValidUser(Long userId) {
+        return userStorage.getUserById(userId) == null;
     }
 }
