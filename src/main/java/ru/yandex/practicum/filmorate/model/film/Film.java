@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.model;
+package ru.yandex.practicum.filmorate.model.film;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Builder
 @Getter
@@ -17,9 +18,10 @@ public class Film {
     private Long id; // целочисленный идентификатор
     @NotBlank (message = "Название фильма не может быть пустым")
     private String name; // название
-    @Size(max = 200, message = "Описание фильма должно быть меньше 200 символов")
+    @Size(min = 1, max = 200, message = "Описание фильма должно быть больше 1 и меньше 200 символов")
     private String description; // описание
     private LocalDate releaseDate; // дата релиза
     @Positive(message = "Продолжительность фильма не может быть отрицательным значением")
     private int duration; // продолжительность фильма
+    private Set<Long> likes;
 }
