@@ -68,10 +68,17 @@ public class UserService {
             }
         }
 
+        boolean status = false;
+
         friendsList.get(userId).add(friendId);
-        log.info("Пользователь с id={} добавлен в список ваших друзей", friendId);
-        friendsList.get(friendId).add(userId);
-        log.info("Вы теперь друзья с id={}", userId);
+        //log.info("Пользователь с id={} добавлен в список ваших друзей", friendId);
+        log.info("Пользователю с id={} направлен запрос на дружбу", friendId);
+
+        if (getAllFriends(friendId).contains(userId)) {
+            status = true;
+            friendsList.get(friendId).add(userId);
+            log.info("Вы и пользователь с id={} уже друзья", friendId);
+        }
     }
 
     // удаление из друзей

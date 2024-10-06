@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import ru.yandex.practicum.filmorate.model.genre.Genre;
+import ru.yandex.practicum.filmorate.model.rating.Rating;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -24,4 +26,6 @@ public class Film {
     @Positive(message = "Продолжительность фильма не может быть отрицательным значением")
     private int duration; // продолжительность фильма
     private Set<Long> likes;
+    private Set<Genre> genre; // жанр
+    private Rating rating; // рейтинг
 }

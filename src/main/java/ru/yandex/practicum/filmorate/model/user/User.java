@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Builder
 @Data
@@ -21,4 +22,5 @@ public class User {
     private String name; // имя для отображения
     @Past
     private LocalDate birthday; // дата рождения
+    private Set<User> friends; // список друзей
 }
