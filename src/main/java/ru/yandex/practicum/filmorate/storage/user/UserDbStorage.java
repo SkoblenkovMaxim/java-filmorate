@@ -20,35 +20,19 @@ import ru.yandex.practicum.filmorate.model.user.User;
 public class UserDbStorage implements UserStorage {
 
     @SuppressWarnings("all")
-    private static final String CREATE_QUERY = """
-            INSERT INTO users (email, login, name, birthday) 
-            VALUES (?, ?, ?, ?)
-            """;
+    private static final String CREATE_QUERY = "INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?)";
 
     @SuppressWarnings("all")
-    private static final String GET_ALL_QUERY = """
-            SELECT * FROM users
-            """;
+    private static final String GET_ALL_QUERY = "SELECT * FROM users";
 
     @SuppressWarnings("all")
-    private static final String GET_BY_ID_QUERY = """
-            SELECT * FROM users WHERE user_id = ?
-            """;
+    private static final String GET_BY_ID_QUERY = "SELECT * FROM users WHERE user_id = ?";
 
     @SuppressWarnings("all")
-    private static final String DELETE_FILM_BY_ID_QUERY = """
-            DELETE FROM film WHERE film_id = ?
-            """;
+    private static final String DELETE_FILM_BY_ID_QUERY = "DELETE FROM film WHERE film_id = ?";
 
     @SuppressWarnings("all")
-    private static final String UPDATE_QUERY = """
-            UPDATE users
-            SET email = ?,
-                login = ?,
-                name = ?,
-                birthday = ?
-            WHERE user_id = ?
-            """;
+    private static final String UPDATE_QUERY = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE user_id = ?";
 
     private final JdbcTemplate jdbcTemplate;
 
