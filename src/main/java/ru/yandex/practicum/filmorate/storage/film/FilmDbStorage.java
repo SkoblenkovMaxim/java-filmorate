@@ -71,7 +71,7 @@ public class FilmDbStorage implements FilmStorage {
             return ps;
         }, keyHolder);
 
-        var key= Objects.requireNonNull(keyHolder.getKey()).longValue();
+        var key = Objects.requireNonNull(keyHolder.getKey()).longValue();
 
         return Film.builder()
                 .id(key)
