@@ -21,8 +21,7 @@ public class UserDbStorage implements UserStorage {
 
     @SuppressWarnings("all")
     private static final String CREATE_QUERY = """
-            INSERT INTO users 
-            (email, login, name, birthday) 
+            INSERT INTO users (email, login, name, birthday) 
             VALUES (?, ?, ?, ?)
             """;
 
@@ -66,7 +65,7 @@ public class UserDbStorage implements UserStorage {
             return ps;
         }, keyHolder);
 
-        var key= Objects.requireNonNull(keyHolder.getKey()).longValue();
+        var key = Objects.requireNonNull(keyHolder.getKey()).longValue();
 
         return User.builder()
                 .id(key)
