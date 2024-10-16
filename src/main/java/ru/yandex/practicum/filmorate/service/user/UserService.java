@@ -3,14 +3,13 @@ package ru.yandex.practicum.filmorate.service.user;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -19,7 +18,6 @@ import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 @Slf4j
-@RequiredArgsConstructor
 @Service
 public class UserService {
 
@@ -27,14 +25,21 @@ public class UserService {
 
     private final Map<Long, Set<Long>> friendsList = new HashMap<>(); // Список друзей
 
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
+        this.userStorage = userStorage;
+    }
+
     public User createUser(User user) {
-        User createdUser = userStorage.createUser(user);
-        friendsList.put(createdUser.getId(), new HashSet<>());
-        return createdUser;
+        return userStorage.createUser(user);
     }
 
     public User updateUser(User user) {
-        return userStorage.updateUser(user);
+        User userFromDb = userStorage.getUserById(user.getId());
+        if (userFromDb != null) {
+            return userStorage.updateUser(user);
+        } else {
+            throw new NotFoundException("id " + user.getId() + " не найден");
+        }
     }
 
     public Collection<User> getUsers() {
