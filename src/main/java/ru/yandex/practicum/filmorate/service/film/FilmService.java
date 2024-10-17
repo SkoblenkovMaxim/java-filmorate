@@ -100,8 +100,7 @@ public class FilmService {
                             .filmId(savedFilm.getId())
                             .genreId(genre.getId())
                             .build());
-                }
-                else {
+                } else {
                     throw new ValidationException("жанр для film id: " + film.getId() + " не найден");
                 }
             }
