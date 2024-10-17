@@ -2,11 +2,8 @@ package ru.yandex.practicum.filmorate.service.user;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -15,18 +12,22 @@ import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.user.User;
+import ru.yandex.practicum.filmorate.storage.friend.FriendDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+
+import static java.lang.String.format;
 
 @Slf4j
 @Service
 public class UserService {
 
     private final UserStorage userStorage;
+    private final FriendDbStorage friendDbStorage;
 
-    private final Map<Long, Set<Long>> friendsList = new HashMap<>(); // Список друзей
-
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
+                       FriendDbStorage friendDbStorage) {
         this.userStorage = userStorage;
+        this.friendDbStorage = friendDbStorage;
     }
 
     public User createUser(User user) {
@@ -66,63 +67,29 @@ public class UserService {
             throw new NotFoundException("Пользователь не найден");
         }
 
-        if (!friendsList.isEmpty()) {
-            if (friendsList.get(userId) != null && friendsList.get(userId).contains(friendId)) {
-                log.debug("Пользователь с id={} уже у вас в друзьях", friendId);
-                throw new DuplicatedDataException("Пользователь уже добавлен в друзья");
-            }
-        }
-
-        boolean status = false;
-
-        friendsList.get(userId).add(friendId);
-        //log.info("Пользователь с id={} добавлен в список ваших друзей", friendId);
-        log.info("Пользователю с id={} направлен запрос на дружбу", friendId);
-
-        if (getAllFriends(friendId).contains(userId)) {
-            status = true;
-            friendsList.get(friendId).add(userId);
-            log.info("Вы и пользователь с id={} уже друзья", friendId);
-        }
+        checkIfFriend(userId, friendId);
+        boolean isFriend = friendDbStorage.isFriendStatus(userId, friendId);
+        friendDbStorage.addFriend(userId, friendId, isFriend);
     }
 
     // удаление из друзей
     public void deleteFriend(Long userId, Long friendId) {
-        if (friendsList.containsKey(userId)) {
-            if (friendsList.get(userId).contains(friendId)) {
-                friendsList.get(userId).remove(friendId);
-                log.info("Пользователь с id={} удален из списка ваших друзей", friendId);
-            }
-        } else {
-            log.debug("Пользователь с id={} не найден", userId);
-            throw new NotFoundException("Пользователь с id=" + userId + " не найден");
-        }
-
-        if (friendsList.containsKey(friendId)) {
-            if (friendsList.get(friendId).contains(userId)) {
-                friendsList.get(friendId).remove(userId);
-                log.info("Пользователь с id={} удален из списка ваших друзей", friendId);
-            }
-        } else {
-            log.debug("Пользователь с id={} не найден", friendId);
-            throw new NotFoundException("Пользователь с id=" + friendId + " не найден");
-        }
+        cheIfNotFriend(userId, friendId);
+        friendDbStorage.deleteFriend(userId, friendId);
     }
 
     // вывод списка друзей
     public Collection<User> getAllFriends(Long userId) {
-        if (friendsList.containsKey(userId)) {
-            List<User> allFriends = new ArrayList<>();
-            for (Long friendId : friendsList.get(userId)) {
-                if (userStorage.getUsers().contains(userStorage.getUserById(friendId))) {
-                    allFriends.add(userStorage.getUserById(friendId));
-                }
-            }
-            log.info("Вывод списка друзей пользователя {}", userId);
-            return allFriends;
+
+        if (!userStorage.isContains(userId)) {
+            throw new NotFoundException(format("У вас нет друга %d", userId));
         }
-        log.debug("У пользователя {} нет друзей", userId);
-        throw new NotFoundException("У вас нет друзей.");
+        List<User> friends = friendDbStorage.getFriends(userId).stream()
+                .mapToLong(Long::valueOf)
+                .mapToObj(userStorage::getUserById)
+                .collect(Collectors.toList());
+        log.trace("The user's friends list were returned: {}", friends);
+        return friends;
     }
 
     // вывод списка общих друзей
@@ -144,8 +111,43 @@ public class UserService {
         return commonFriends;
     }
 
-    // Проверка наличия пользователя в хранилище
+    //Проверка наличия пользователя в хранилище
     public boolean isValidUser(Long userId) {
         return userStorage.getUserById(userId) == null;
+    }
+
+    private void checkIfFriend(Long userId, Long friendId) {
+        log.debug("checkIfFriend({}, {})", userId, friendId);
+        if (!userStorage.isContains(userId)) {
+            throw new NotFoundException(format("User with id %d wasn't found", userId));
+        }
+        if (!userStorage.isContains(friendId)) {
+            throw new NotFoundException(format("User with id %d wasn't found", userId));
+        }
+        if (userId.equals(friendId)) {
+            throw new DuplicatedDataException("Attempt to add yourself into a friends list, the id is " + userId);
+        }
+        if (friendDbStorage.isFriendStatus(userId, friendId)) {
+            throw new ValidationException(
+                    format("The user with id %d is already friend of user with id %d", userId, friendId));
+        }
+    }
+
+    private void cheIfNotFriend(Long userId, Long friendId) {
+        log.debug("checkIfNotFriend({}, {})", userId, friendId);
+        if (!userStorage.isContains(userId)) {
+            throw new ValidationException(format("User with id %d wasn't found", userId));
+        }
+        if (!userStorage.isContains(friendId)) {
+            throw new NotFoundException(format("User with id %d wasn't found", userId));
+        }
+        if (userId.equals(friendId)) {
+            throw new DuplicatedDataException(
+                    "Attempt to delete yourself from a friends list, the id is " + userId);
+        }
+        if (!friendDbStorage.isFriendStatus(userId, friendId)) {
+            throw new ValidationException(
+                    format("There is no friendship between user with id %d and user with id %d", userId, friendId));
+        }
     }
 }

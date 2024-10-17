@@ -6,12 +6,15 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.genre.FilmGenre;
 import ru.yandex.practicum.filmorate.model.like.Like;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.genre.Genre;
+import ru.yandex.practicum.filmorate.model.rating.Rating;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.like.LikeStorage;
+import ru.yandex.practicum.filmorate.storage.raiting.RatingStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
@@ -26,16 +29,19 @@ public class FilmService {
     private final UserStorage userStorage;
     private final LikeStorage likeStorage;
     private final GenreStorage genreStorage;
+    private final RatingStorage ratingStorage;
 
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
                        @Qualifier("likeDbStorage") LikeStorage likeStorage,
                        @Qualifier("userDbStorage") UserStorage userStorage,
-                       @Qualifier("genreDbStorage") GenreStorage genreStorage
+                       @Qualifier("genreDbStorage") GenreStorage genreStorage,
+                       @Qualifier("ratingDbStorage") RatingStorage ratingStorage
     ) {
         this.filmStorage = filmStorage;
         this.likeStorage = likeStorage;
         this.userStorage = userStorage;
         this.genreStorage = genreStorage;
+        this.ratingStorage = ratingStorage;
     }
 
     // добавление лайка
@@ -80,13 +86,27 @@ public class FilmService {
 
         Film savedFilm = filmStorage.saveFilm(film);
 
-        film.getGenres().forEach(genre ->
-                genreStorage.createGenre(Genre.builder()
-                        .filmId(savedFilm.getId())
-                        .genreId(genre.getId())
-                        .build()
-                )
-        );
+        Rating mpa = ratingStorage.getRatingById(film.getMpa().getId());
+
+        if (mpa == null) {
+            throw new ValidationException("рейтинг для film id: " + film.getId() + " не найден");
+        }
+
+        film.getGenres().forEach(genre -> {
+            if (genre.getId() != null) {
+                Genre genreFromDb = genreStorage.getGenreById(genre.getId());
+                if (genreFromDb != null) {
+                    genreStorage.createFilmGenre(FilmGenre.builder()
+                            .filmId(savedFilm.getId())
+                            .genreId(genre.getId())
+                            .build());
+                }
+                else {
+                    throw new ValidationException("жанр для film id: " + film.getId() + " не найден");
+                }
+            }
+        });
+
         savedFilm.setGenres(film.getGenres());
         return savedFilm;
     }
@@ -96,7 +116,12 @@ public class FilmService {
     }
 
     public Film updateFilm(Film film) {
-        return filmStorage.updateFilm(film);
+        Film filmFromDb = filmStorage.getFilm(film.getId());
+        if (filmFromDb != null) {
+            return filmStorage.updateFilm(film);
+        } else {
+            throw new NotFoundException("id " + film.getId() + " не найден");
+        }
     }
 
     public Film getFilm(Long filmId) {

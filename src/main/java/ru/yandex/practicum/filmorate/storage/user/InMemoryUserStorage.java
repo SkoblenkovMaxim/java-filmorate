@@ -82,6 +82,11 @@ public class InMemoryUserStorage implements UserStorage {
         throw new NotFoundException("Пользователь с id=" + userId + " не найден");
     }
 
+    @Override
+    public boolean isContains(Long id) {
+        return false;
+    }
+
     // Удаление пользователя
     public void removeUser(Long userId) {
         if (isValidUser(userId)) {

@@ -15,8 +15,10 @@ import java.util.List;
 @Slf4j
 @Repository
 public class RatingDbStorage implements RatingStorage {
+
     private final JdbcTemplate jdbcTemplate;
 
+    @SuppressWarnings("all")
     public List<Rating> getAllRating() {
         return jdbcTemplate.query(
                 "SELECT rating_id, name FROM ratings_mpa",
@@ -24,11 +26,13 @@ public class RatingDbStorage implements RatingStorage {
         );
     }
 
+    @SuppressWarnings("all")
     public Rating getRatingById(Integer ratingId) {
         if (ratingId != null) {
-            return jdbcTemplate.queryForObject(
-                    "SELECT rating_id, nameFROM ratings_mpa WHERE rating_id = ?",
-                    RatingDbStorage::mapRow,
+            return jdbcTemplate.query(
+                    //"SELECT rating_id, name FROM ratings_mpa WHERE rating_id = ?",
+                    "SELECT * FROM ratings_mpa WHERE rating_id = ?",
+                    rs -> rs.next() ? mapRow(rs, 1) : null,
                     ratingId
             );
         }

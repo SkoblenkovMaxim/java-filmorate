@@ -2,15 +2,16 @@ package ru.yandex.practicum.filmorate.storage.genre;
 
 import java.util.List;
 
+import ru.yandex.practicum.filmorate.model.genre.FilmGenre;
 import ru.yandex.practicum.filmorate.model.genre.Genre;
 
 public interface GenreStorage {
 
-    void createGenre(Genre genre);
+    void createFilmGenre(FilmGenre filmGenre);
 
-    Genre getGenreById(Integer genreId); // добавление фильма
+    Genre getGenreById(Long genreId); // добавление фильма
 
     List<Genre> getGenres();
 
-    boolean isContains(Integer id);
+    boolean isContains(Long id);
 }

@@ -24,7 +24,7 @@ public class GenreController {
     }
 
     @GetMapping("/{genreId}")
-    public Genre getGenreById(@PathVariable Integer genreId) {
+    public Genre getGenreById(@PathVariable Long genreId) {
         return genreService.getGenreById(genreId);
     }
 
@@ -32,3 +32,4 @@ public class GenreController {
 //        return genreService.getGenresFilm(filmId);
 //    }
 }
+

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 
 import lombok.RequiredArgsConstructor;
 import ru.yandex.practicum.filmorate.model.film.Film;
+import ru.yandex.practicum.filmorate.model.user.User;
 
 @Repository
 @RequiredArgsConstructor
@@ -39,14 +40,14 @@ public class FilmDbStorage implements FilmStorage {
             DELETE FROM films WHERE film_id = ?
             """;
 
+    @SuppressWarnings("all")
     private static final String UPDATE_FILM_QUERY = """
             UPDATE films
             SET name = ?,
                 description = ?,
                 release_date = ?,
                 duration = ?,
-                rating_id = ?,
-                genre_id = ?
+                rating_id = ?
             WHERE film_id = ?
             """;
 
@@ -110,18 +111,26 @@ public class FilmDbStorage implements FilmStorage {
                 .description(film.getDescription())
                 .releaseDate(film.getReleaseDate())
                 .duration(film.getDuration())
-                .mpa(film.getMpa())
                 .build();
     }
 
     @Override
     public Film getFilm(Long filmId) {
-        return jdbcTemplate.queryForObject(
+        return jdbcTemplate.query(
                 GET_FILM_BY_ID_QUERY,
-                FilmDbStorage::mapRow,
+                rs -> rs.next() ? mapRow(rs, 1) : null,
                 filmId
         );
     }
+
+//    @Override
+//    public User getUserById(Long userId) {
+//        return jdbcTemplate.query(
+//                GET_BY_ID_QUERY,
+//                rs -> rs.next() ? resultSetToUser(rs, 1) : null,
+//                userId
+//        );
+//    }
 
     @Override
     public Collection<Film> getFilms() {

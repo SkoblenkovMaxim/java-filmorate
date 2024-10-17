@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Objects;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Repository;
 import lombok.RequiredArgsConstructor;
 import ru.yandex.practicum.filmorate.model.user.User;
 
+@Slf4j
 @Repository
 @RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
@@ -115,4 +118,16 @@ public class UserDbStorage implements UserStorage {
                 .build();
     }
 
+    @Override
+    public boolean isContains(Long id) {
+        log.debug("isContains({})", id);
+        try {
+            getUserById(id);
+            log.trace("The user with id {} was found", id);
+            return true;
+        } catch (EmptyResultDataAccessException exception) {
+            log.trace("No information was found for user with id {}", id);
+            return false;
+        }
+    }
 }

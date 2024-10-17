@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import lombok.RequiredArgsConstructor;
+import ru.yandex.practicum.filmorate.model.genre.FilmGenre;
 import ru.yandex.practicum.filmorate.model.like.Like;
 import ru.yandex.practicum.filmorate.model.genre.Genre;
 
@@ -29,31 +30,32 @@ public class GenreDbStorage implements GenreStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public void createGenre(Genre genre) {
+    public void createFilmGenre(FilmGenre filmGenre) {
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(CREATE_QUERY, new String[]{"film_genres_id"});
-            ps.setLong(1, genre.getFilmId());
-            ps.setLong(2, genre.getGenreId());
+            ps.setLong(1, filmGenre.getFilmId());
+            ps.setLong(2, filmGenre.getGenreId());
             return ps;
         });
     }
 
+    @SuppressWarnings("all")
     @Override
-    public Genre getGenreById(Integer filmId) {
-        return jdbcTemplate.queryForObject(
-                "SELECT film_id, genre_id FROM film_genres WHERE film_id = ?",
-                GenreDbStorage::mapRow,
-                filmId
+    public Genre getGenreById(Long genreId) {
+        return jdbcTemplate.query(
+                "SELECT * FROM genres WHERE genre_id = ?",
+                rs -> rs.next() ? resultSetToGenre(rs, 1) : null,
+                genreId
         );
     }
 
     @Override
     public List<Genre> getGenres() {
-        return jdbcTemplate.query(GET_ALL_QUERY, GenreDbStorage::mapRow);
+        return jdbcTemplate.query(GET_ALL_QUERY, GenreDbStorage::resultSetToGenre);
     }
 
     @Override
-    public boolean isContains(Integer id) {
+    public boolean isContains(Long id) {
         try {
             getGenreById(id);
             return true;
@@ -70,10 +72,18 @@ public class GenreDbStorage implements GenreStorage {
                 .build();
     }
 
-    private static Genre mapRow(ResultSet rs, int rowNum) throws SQLException {
+    private static Genre resultSetToGenre(ResultSet rs, int rowNum) throws SQLException {
         return Genre.builder()
-                .filmId(rs.getLong("film_id"))
-                .genreId(rs.getLong("genre_id"))
+                .id(rs.getLong("genre_id"))
+                .name(rs.getString("name"))
                 .build();
     }
+
+//    private static Genre mapRow(ResultSet rs, int rowNum) throws SQLException {
+//        return Genre.builder()
+//                .filmId(rs.getLong("film_id"))
+//                .genreId(rs.getLong("genre_id"))
+//                .build();
+//    }
+
 }

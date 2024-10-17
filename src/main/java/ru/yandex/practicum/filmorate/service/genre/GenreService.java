@@ -24,7 +24,7 @@ public class GenreService {
         return genreStorage.getGenres();
     }
 
-    public Genre getGenreById(Integer genreId) {
+    public Genre getGenreById(Long genreId) {
         if (genreId == null) {
             throw new NotFoundException("id genre не найден");
         }
