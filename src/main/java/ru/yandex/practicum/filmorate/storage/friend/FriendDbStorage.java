@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class FriendDbStorage implements FriendStorage{
+
     private final JdbcTemplate jdbcTemplate;
 
     @Override
