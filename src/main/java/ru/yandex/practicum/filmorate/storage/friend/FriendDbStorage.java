@@ -24,7 +24,7 @@ public class FriendDbStorage implements FriendStorage {
     public void addFriend(Long userId, Long friendId, boolean isFriendStatus) {
 
         if (!getFriends(userId).contains(friendId) && !getFriends(friendId).contains(userId)) {
-            jdbcTemplate.update(connection-> {
+            jdbcTemplate.update(connection -> {
                 PreparedStatement statement = connection.prepareStatement(
                         "INSERT INTO friends (user_id, friend_id, is_friend_status) VALUES(?, ?, ?)");
                 statement.setLong(1, userId);
@@ -35,8 +35,8 @@ public class FriendDbStorage implements FriendStorage {
             });
         }
 
-        if(isFriendStatus(userId, friendId)) {
-            jdbcTemplate.update(connection-> {
+        if (isFriendStatus(userId, friendId)) {
+            jdbcTemplate.update(connection -> {
                 PreparedStatement statement = connection.prepareStatement(
                         "UPDATE friends SET is_friend_status=true WHERE user_id=? AND friend_id=?");
                 statement.setLong(1, userId);
