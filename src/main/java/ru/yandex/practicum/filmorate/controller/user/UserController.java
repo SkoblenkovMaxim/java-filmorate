@@ -64,12 +64,12 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/friends")
-    public Collection<User> getAllFriends(@PathVariable Long userId) {
+    public List<Long> getAllFriends(@PathVariable Long userId) {
         return userService.getAllFriends(userId);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public List<User> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {
+    public List<Long> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {
         return userService.getCommonFriends(id, otherId);
     }
 }

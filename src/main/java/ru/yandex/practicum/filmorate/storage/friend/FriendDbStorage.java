@@ -54,9 +54,9 @@ public class FriendDbStorage implements FriendStorage {
     @Override
     public Friends getFriend(Long userId, Long friendId) {
         return jdbcTemplate.queryForObject(
-                        "SELECT user_id, friend_id, is_friend_status FROM friends WHERE user_id=? AND friend_id=?",
-                        FriendDbStorage::mapRow,
-                        userId, friendId);
+                "SELECT user_id, friend_id, is_friend_status FROM friends WHERE user_id=? AND friend_id=?",
+                FriendDbStorage::mapRow,
+                userId, friendId);
     }
 
     @Override

@@ -21,7 +21,7 @@ public class RatingDbStorage implements RatingStorage {
     @SuppressWarnings("all")
     public List<Rating> getAllRating() {
         return jdbcTemplate.query(
-                "SELECT rating_id, name FROM ratings_mpa",
+                "SELECT * FROM ratings_mpa",
                 RatingDbStorage::mapRow
         );
     }
@@ -30,13 +30,12 @@ public class RatingDbStorage implements RatingStorage {
     public Rating getRatingById(Integer ratingId) {
         if (ratingId != null) {
             return jdbcTemplate.query(
-                    //"SELECT rating_id, name FROM ratings_mpa WHERE rating_id = ?",
                     "SELECT * FROM ratings_mpa WHERE rating_id = ?",
                     rs -> rs.next() ? mapRow(rs, 1) : null,
                     ratingId
             );
         }
-        throw new NotFoundException("id " + ratingId + " не найден");
+        throw new NotFoundException("id рейтинга не должен быть null");
     }
 
     private static Rating mapRow(ResultSet rs, int rowNum) throws SQLException {

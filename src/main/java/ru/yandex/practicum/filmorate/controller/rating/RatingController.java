@@ -14,7 +14,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/mpa")
 public class RatingController {
-    private RatingService ratingService;
+
+    private final RatingService ratingService;
 
     @GetMapping
     public List<Rating> getAllRating() {
