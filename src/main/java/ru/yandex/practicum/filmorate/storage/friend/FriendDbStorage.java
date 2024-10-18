@@ -6,7 +6,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.friend.Friends;
-
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -22,10 +22,28 @@ public class FriendDbStorage implements FriendStorage {
 
     @Override
     public void addFriend(Long userId, Long friendId, boolean isFriendStatus) {
-        jdbcTemplate.update("INSERT INTO friends (user_id, friend_id, is_friend_status) VALUES(?, ?, ?)",
-                userId, friendId, isFriendStatus);
-        Friends friends = getFriend(userId, friendId);
-        log.info("Added friend: {}", friends);
+
+        if (!getFriends(userId).contains(friendId) && !getFriends(friendId).contains(userId)) {
+            jdbcTemplate.update(connection-> {
+                PreparedStatement statement = connection.prepareStatement(
+                        "INSERT INTO friends (user_id, friend_id, is_friend_status) VALUES(?, ?, ?)");
+                statement.setLong(1, userId);
+                statement.setLong(2, friendId);
+                statement.setBoolean(3, isFriendStatus);
+                log.info("Added friend: {}", friendId);
+                return statement;
+            });
+        }
+
+        if(isFriendStatus(userId, friendId)) {
+            jdbcTemplate.update(connection-> {
+                PreparedStatement statement = connection.prepareStatement(
+                        "UPDATE friends SET is_friend_status=true WHERE user_id=? AND friend_id=?");
+                statement.setLong(1, userId);
+                statement.setLong(2, friendId);
+                return statement;
+            });
+        }
     }
 
     @Override

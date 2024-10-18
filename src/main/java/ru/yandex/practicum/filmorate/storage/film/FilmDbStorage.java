@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 
 import lombok.RequiredArgsConstructor;
 import ru.yandex.practicum.filmorate.model.film.Film;
+import ru.yandex.practicum.filmorate.model.rating.Rating;
 
 @Repository
 @RequiredArgsConstructor
@@ -122,15 +123,6 @@ public class FilmDbStorage implements FilmStorage {
         );
     }
 
-//    @Override
-//    public User getUserById(Long userId) {
-//        return jdbcTemplate.query(
-//                GET_BY_ID_QUERY,
-//                rs -> rs.next() ? resultSetToUser(rs, 1) : null,
-//                userId
-//        );
-//    }
-
     @Override
     public Collection<Film> getFilms() {
         return jdbcTemplate.query(
@@ -146,6 +138,7 @@ public class FilmDbStorage implements FilmStorage {
                 .description(rs.getString("description"))
                 .releaseDate(rs.getDate("release_date").toLocalDate())
                 .duration(rs.getInt("duration"))
+                .mpa(Rating.builder().id(rs.getInt("rating_id")).build())
                 .build();
     }
 }

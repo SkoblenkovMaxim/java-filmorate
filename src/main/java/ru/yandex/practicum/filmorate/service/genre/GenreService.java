@@ -13,11 +13,11 @@ import java.util.List;
 public class GenreService {
 
     private final GenreStorage genreStorage;
-    private final FilmStorage filmStorage;
+    //private final FilmStorage filmStorage;
 
     public GenreService(GenreStorage genreStorage, @Qualifier("filmDbStorage") FilmStorage filmStorage) {
         this.genreStorage = genreStorage;
-        this.filmStorage = filmStorage;
+        //this.filmStorage = filmStorage;
     }
 
     public List<Genre> getGenres() {
@@ -28,6 +28,9 @@ public class GenreService {
         if (genreId == null) {
             throw new NotFoundException("id genre не найден");
         }
-        return genreStorage.getGenreById(genreId);
+        Genre genre = genreStorage.getGenreById(genreId);
+        if (genre == null) throw new NotFoundException("id " + genreId + " не найден");
+        return genre;
     }
+
 }

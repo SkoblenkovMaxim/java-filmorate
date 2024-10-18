@@ -92,19 +92,21 @@ public class FilmService {
             throw new ValidationException("рейтинг для film id: " + film.getId() + " не найден");
         }
 
-        film.getGenres().forEach(genre -> {
-            if (genre.getId() != null) {
-                Genre genreFromDb = genreStorage.getGenreById(genre.getId());
-                if (genreFromDb != null) {
-                    genreStorage.createFilmGenre(FilmGenre.builder()
-                            .filmId(savedFilm.getId())
-                            .genreId(genre.getId())
-                            .build());
-                } else {
-                    throw new ValidationException("жанр для film id: " + film.getId() + " не найден");
+        if (film.getGenres() != null) {
+            film.getGenres().forEach(genre -> {
+                if (genre.getId() != null) {
+                    Genre genreFromDb = genreStorage.getGenreById(genre.getId());
+                    if (genreFromDb != null) {
+                        genreStorage.createFilmGenre(FilmGenre.builder()
+                                .filmId(savedFilm.getId())
+                                .genreId(genre.getId())
+                                .build());
+                    } else {
+                        throw new ValidationException("жанр для film id: " + film.getId() + " не найден");
+                    }
                 }
-            }
-        });
+            });
+        }
 
         savedFilm.setGenres(film.getGenres());
         return savedFilm;
@@ -124,7 +126,21 @@ public class FilmService {
     }
 
     public Film getFilm(Long filmId) {
-        return filmStorage.getFilm(filmId);
+        Film filmFromDb = filmStorage.getFilm(filmId);
+        Rating rating = ratingStorage.getRatingById(filmFromDb.getMpa().getId());
+        filmFromDb.getMpa().setName(rating.getName());
+        filmFromDb.getMpa().setDescription(rating.getDescription());
+
+        Set<Genre> genreSet = new HashSet<>();
+        genreStorage.getFilmGenresByFilmId(filmFromDb.getId())
+                .forEach(filmGenre -> {
+                            Genre genre = genreStorage.getGenreById(filmGenre.getGenreId());
+                            genreSet.add(genre);
+                        }
+                );
+        filmFromDb.setGenres(genreSet);
+
+        return filmFromDb;
     }
 
     public Collection<Film> getFilms() {

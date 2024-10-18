@@ -65,7 +65,7 @@ public class UserController {
 
     @GetMapping("/{userId}/friends")
     public List<Long> getAllFriends(@PathVariable Long userId) {
-        return userService.getAllFriends(userId);
+        return userService.getFriends(userId);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")

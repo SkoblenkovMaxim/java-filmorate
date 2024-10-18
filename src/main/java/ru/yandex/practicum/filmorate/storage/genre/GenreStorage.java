@@ -9,9 +9,11 @@ public interface GenreStorage {
 
     void createFilmGenre(FilmGenre filmGenre);
 
-    Genre getGenreById(Long genreId); // добавление фильма
+    Genre getGenreById(Long genreId);
+
+    List<FilmGenre> getFilmGenresByFilmId(Long filmId);
 
     List<Genre> getGenres();
 
-    boolean isContains(Long id);
+    //boolean isContains(Long id);
 }
