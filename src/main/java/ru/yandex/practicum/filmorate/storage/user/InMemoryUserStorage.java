@@ -7,7 +7,6 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -15,7 +14,6 @@ import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.service.IdGenerator;
 
 @Slf4j
-@RequiredArgsConstructor
 @Component
 public class InMemoryUserStorage implements UserStorage {
 
@@ -23,6 +21,10 @@ public class InMemoryUserStorage implements UserStorage {
     private final Map<Long, User> allUsers = new HashMap<>();
 
     private final IdGenerator idGenerator;
+
+    public InMemoryUserStorage(IdGenerator idGenerator) {
+        this.idGenerator = idGenerator;
+    }
 
     // Создание пользователя
     public User createUser(User newUser) {
@@ -62,7 +64,7 @@ public class InMemoryUserStorage implements UserStorage {
             }
             return oldUser;
         }
-        log.debug("id={} не найден", newUser.getId());
+        //log.debug("id={} не найден", newUser.getId());
         throw new NotFoundException("id " + newUser.getId() + " не найден");
     }
 
@@ -76,8 +78,13 @@ public class InMemoryUserStorage implements UserStorage {
         if (isValidUser(userId)) {
             return allUsers.get(userId);
         }
-        log.debug("Пользователь с id={} не найден", userId);
+        //log.debug("Пользователь с id={} не найден", userId);
         throw new NotFoundException("Пользователь с id=" + userId + " не найден");
+    }
+
+    @Override
+    public boolean isContains(Long id) {
+        return false;
     }
 
     // Удаление пользователя
@@ -85,7 +92,7 @@ public class InMemoryUserStorage implements UserStorage {
         if (isValidUser(userId)) {
             allUsers.remove(userId, allUsers.get(userId));
         } else {
-            log.debug("Пользователь {} не найден", allUsers.get(userId).getName());
+            //log.debug("Пользователь {} не найден", allUsers.get(userId).getName());
             throw new NotFoundException("Пользователь не найден");
         }
     }

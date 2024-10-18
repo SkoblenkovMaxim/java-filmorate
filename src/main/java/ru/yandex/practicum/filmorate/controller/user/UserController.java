@@ -13,18 +13,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 
 @Slf4j
-@RequiredArgsConstructor
 @RestController
 @RequestMapping("/users")
 public class UserController {
 
     private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @PostMapping
     public User createUser(@Valid @RequestBody User user) {
@@ -47,7 +49,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}")
-    public void removeUser(Long userId) {
+    public void removeUser(@PathVariable Long userId) {
         userService.removeUser(userId);
     }
 
@@ -62,12 +64,12 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/friends")
-    public Collection<User> getAllFriends(@PathVariable Long userId) {
-        return userService.getAllFriends(userId);
+    public List<Long> getAllFriends(@PathVariable Long userId) {
+        return userService.getFriends(userId);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public List<User> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {
+    public List<Long> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {
         return userService.getCommonFriends(id, otherId);
     }
 }
