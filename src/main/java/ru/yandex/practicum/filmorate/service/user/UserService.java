@@ -63,8 +63,11 @@ public class UserService {
 
     // удаление из друзей
     public void deleteFriend(Long userId, Long friendId) {
+
         checkIfNotFriend(userId, friendId);
-        friendStorage.deleteFriend(userId, friendId);
+        if (friendStorage.isFriendStatus(userId, friendId) || !getUsers().contains(getUserById(friendId))) {
+            friendStorage.deleteFriend(userId, friendId);
+        }
     }
 
     // вывод списка друзей
@@ -81,6 +84,10 @@ public class UserService {
 
     public List<User> getFriendsByUserId(Long userId) {
         List<Friends> friends = friendStorage.getFriendsByUserId(userId);
+
+        if (!getUsers().contains(getUserById(userId))) {
+            throw new NotFoundException(format("Пользователь с id= %d не найден", userId));
+        }
 
         List<User> usersFromDb = new ArrayList<>();
         friends.forEach(friend -> {
@@ -138,16 +145,9 @@ public class UserService {
         if (!getUsers().contains(getUserById(userId))) {
             throw new NotFoundException(format("User with id %d wasn't found", userId));
         }
-        if (!getUsers().contains(getUserById(friendId))) {
-            throw new NotFoundException(format("User with id %d wasn't found", userId));
-        }
         if (userId.equals(friendId)) {
             throw new NotFoundException(
                     "Attempt to delete yourself from a friends list, the id is " + userId);
-        }
-        if (!friendStorage.isFriendStatus(userId, friendId)) {
-            throw new NotFoundException(
-                    format("There is no friendship between user with id %d and user with id %d", userId, friendId));
         }
     }
 }

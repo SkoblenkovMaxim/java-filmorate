@@ -93,11 +93,12 @@ public class FilmService {
         }
 
         if (film.getGenres() != null) {
+            Set<FilmGenre> filmGenreSet = new HashSet<>();
             film.getGenres().forEach(genre -> {
                 if (genre.getId() != null) {
                     Genre genreFromDb = genreStorage.getGenreById(genre.getId());
                     if (genreFromDb != null) {
-                        genreStorage.createFilmGenre(FilmGenre.builder()
+                        filmGenreSet.add(FilmGenre.builder()
                                 .filmId(savedFilm.getId())
                                 .genreId(genre.getId())
                                 .build());
@@ -106,6 +107,11 @@ public class FilmService {
                     }
                 }
             });
+            filmGenreSet.forEach(filmGenre ->
+                    genreStorage.createFilmGenre(FilmGenre.builder()
+                            .filmId(filmGenre.getFilmId())
+                            .genreId(filmGenre.getGenreId())
+                            .build()));
         }
 
         savedFilm.setGenres(film.getGenres());
