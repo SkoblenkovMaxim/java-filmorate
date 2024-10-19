@@ -131,14 +131,15 @@ public class FilmService {
         filmFromDb.getMpa().setName(rating.getName());
         filmFromDb.getMpa().setDescription(rating.getDescription());
 
-        Set<Genre> genreSet = new HashSet<>();
+        List<Genre> genreList = new ArrayList<>();
         genreStorage.getFilmGenresByFilmId(filmFromDb.getId())
                 .forEach(filmGenre -> {
                             Genre genre = genreStorage.getGenreById(filmGenre.getGenreId());
-                            genreSet.add(genre);
+                            genreList.add(genre);
                         }
                 );
-        filmFromDb.setGenres(genreSet);
+        genreList.sort(Comparator.comparing(Genre::getId));
+        filmFromDb.setGenres(genreList);
 
         return filmFromDb;
     }

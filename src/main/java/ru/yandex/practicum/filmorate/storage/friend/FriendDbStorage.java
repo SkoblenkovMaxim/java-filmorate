@@ -20,6 +20,7 @@ public class FriendDbStorage implements FriendStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
+    @SuppressWarnings("all")
     @Override
     public void addFriend(Long userId, Long friendId, boolean isFriendStatus) {
 
@@ -46,6 +47,7 @@ public class FriendDbStorage implements FriendStorage {
         }
     }
 
+    @SuppressWarnings("all")
     @Override
     public void deleteFriend(Long userId, Long friendId) {
         Friends friends = Objects.requireNonNull(getFriend(userId, friendId));
@@ -58,6 +60,7 @@ public class FriendDbStorage implements FriendStorage {
         log.info("Не найден friend: {}", friends);
     }
 
+    @SuppressWarnings("all")
     @Override
     public List<Long> getFriends(Long userId) {
         return jdbcTemplate.query(
@@ -69,6 +72,17 @@ public class FriendDbStorage implements FriendStorage {
                 .collect(Collectors.toList());
     }
 
+    @SuppressWarnings("all")
+    @Override
+    public List<Friends> getFriendsByUserId(Long userId) {
+        return jdbcTemplate.query(
+                "SELECT * FROM friends WHERE user_id=?",
+                FriendDbStorage::mapRow,
+                userId
+        );
+    }
+
+    @SuppressWarnings("all")
     @Override
     public Friends getFriend(Long userId, Long friendId) {
         return jdbcTemplate.queryForObject(
@@ -92,7 +106,7 @@ public class FriendDbStorage implements FriendStorage {
 
     public static Friends mapRow(ResultSet rs, int rowNum) throws SQLException {
         Friends friend = new Friends();
-        friend.setFriendId(rs.getLong("user_id"));
+        friend.setUserId(rs.getLong("user_id"));
         friend.setFriendId(rs.getLong("friend_id"));
         friend.setFriendStatus(rs.getBoolean("is_friend_status"));
         return friend;

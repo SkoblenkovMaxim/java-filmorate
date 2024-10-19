@@ -6,6 +6,7 @@ import lombok.*;
 import ru.yandex.practicum.filmorate.model.genre.Genre;
 import ru.yandex.practicum.filmorate.model.rating.Rating;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 @Builder
@@ -25,5 +26,5 @@ public class Film {
     private int duration; // продолжительность фильма
     private Set<Long> likes;
     private Rating mpa; // рейтинг
-    private Set<Genre> genres; // жанр
+    private List<Genre> genres; // жанр
 }

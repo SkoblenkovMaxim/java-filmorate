@@ -15,4 +15,6 @@ public interface FriendStorage {
     Friends getFriend(Long userId, Long friendId);
 
     boolean isFriendStatus(Long userId, Long friendId);
+
+    List<Friends> getFriendsByUserId(Long userId);
 }

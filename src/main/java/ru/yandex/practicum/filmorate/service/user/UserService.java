@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.friend.Friends;
 import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.storage.friend.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -76,6 +77,19 @@ public class UserService {
         List<Long> friends = friendStorage.getFriends(userId);
         log.trace("The user's friends list were returned: {}", friends);
         return friends;
+    }
+
+    public List<User> getFriendsByUserId(Long userId) {
+        List<Friends> friends = friendStorage.getFriendsByUserId(userId);
+
+        List<User> usersFromDb = new ArrayList<>();
+        friends.forEach(friend -> {
+            User user = userStorage.getUserById(friend.getFriendId());
+            usersFromDb.add(user);
+        });
+
+        log.trace("The user's friends list were returned: {}", friends);
+        return usersFromDb;
     }
 
     // вывод списка общих друзей
