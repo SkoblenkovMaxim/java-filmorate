@@ -65,7 +65,8 @@ public class UserService {
     public void deleteFriend(Long userId, Long friendId) {
 
         checkIfNotFriend(userId, friendId);
-        if (friendStorage.isFriendStatus(userId, friendId) || !getUsers().contains(getUserById(friendId))) {
+        if (friendStorage.isFriendStatus(userId, friendId)
+                || !getUsers().contains(getUserById(friendId))) {
             friendStorage.deleteFriend(userId, friendId);
         }
     }
@@ -144,6 +145,9 @@ public class UserService {
         log.debug("checkIfNotFriend({}, {})", userId, friendId);
         if (!getUsers().contains(getUserById(userId))) {
             throw new NotFoundException(format("User with id %d wasn't found", userId));
+        }
+        if (!getUsers().contains(getUserById(friendId))) {
+            throw new NotFoundException(format("User with id %d wasn't found", friendId));
         }
         if (userId.equals(friendId)) {
             throw new NotFoundException(
