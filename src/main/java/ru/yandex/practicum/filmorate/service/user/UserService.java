@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.service.user;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.friend.Friends;
 import ru.yandex.practicum.filmorate.model.user.User;
+import ru.yandex.practicum.filmorate.model.user.UserDto;
+import ru.yandex.practicum.filmorate.model.user.UserMapper;
 import ru.yandex.practicum.filmorate.storage.friend.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -21,32 +25,41 @@ public class UserService {
 
     private final UserStorage userStorage;
     private final FriendStorage friendStorage;
+    private final UserMapper userMapper;
 
     public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
-                       FriendStorage friendStorage) {
+                       FriendStorage friendStorage,
+                       UserMapper userMapper) {
         this.userStorage = userStorage;
         this.friendStorage = friendStorage;
+        this.userMapper = userMapper;
     }
 
-    public User createUser(User user) {
-        return userStorage.createUser(user);
+    public UserDto createUser(UserDto userDto) {
+        User user = userMapper.toUser(userDto);
+
+        return userMapper.toUserDto(userStorage.createUser(user));
     }
 
-    public User updateUser(User user) {
+    public UserDto updateUser(UserDto userDto) {
+        User user = userMapper.toUser(userDto);
+
         User userFromDb = userStorage.getUserById(user.getId());
         if (userFromDb != null) {
-            return userStorage.updateUser(user);
+            return userMapper.toUserDto(userStorage.updateUser(user));
         } else {
             throw new NotFoundException("id " + user.getId() + " не найден");
         }
     }
 
-    public Collection<User> getUsers() {
-        return userStorage.getUsers();
+    public Collection<UserDto> getUsers() {
+        return userStorage.getUsers().stream()
+                .map(userMapper::toUserDto)
+                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
     }
 
-    public User getUserById(Long userId) {
-        return userStorage.getUserById(userId);
+    public UserDto getUserById(Long userId) {
+        return userMapper.toUserDto(userStorage.getUserById(userId));
     }
 
     public void removeUser(Long userId) {
@@ -83,7 +96,7 @@ public class UserService {
         return friends;
     }
 
-    public List<User> getFriendsByUserId(Long userId) {
+    public List<UserDto> getFriendsByUserId(Long userId) {
         List<Friends> friends = friendStorage.getFriendsByUserId(userId);
 
         if (!getUsers().contains(getUserById(userId))) {
@@ -97,11 +110,11 @@ public class UserService {
         });
 
         log.trace("The user's friends list were returned: {}", friends);
-        return usersFromDb;
+        return usersFromDb.stream().map(userMapper::toUserDto).collect(Collectors.toList());
     }
 
     // вывод списка общих друзей
-    public List<User> getCommonFriends(Long userId, Long friendId) {
+    public List<UserDto> getCommonFriends(Long userId, Long friendId) {
         log.info("Получение списка общих друзей пользователей {} и {}", userId, friendId);
 
         if (isValidUser(userId) || isValidUser(friendId)) {
@@ -109,9 +122,9 @@ public class UserService {
             throw new NotFoundException("Пользователь с id=" + userId + " не найден");
         }
 
-        List<User> userFriends = getFriendsByUserId(userId);
-        List<User> friendFriends = getFriendsByUserId(friendId);
-        List<User> commonFriends = new ArrayList<>();
+        List<UserDto> userFriends = getFriendsByUserId(userId);
+        List<UserDto> friendFriends = getFriendsByUserId(friendId);
+        List<UserDto> commonFriends = new ArrayList<>();
 
         userFriends.forEach(userFriend -> {
             if (friendFriends.contains(userFriend)) {
@@ -124,11 +137,7 @@ public class UserService {
 
     //Проверка наличия пользователя в хранилище
     public boolean isValidUser(Long userId) {
-        if (userStorage.getUserById(userId) != null) {
-            return true;
-        } else {
-            return false;
-        }
+        return userStorage.getUserById(userId) == null;
     }
 
     private void checkIfFriend(Long userId, Long friendId) {

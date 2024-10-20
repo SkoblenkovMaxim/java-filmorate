@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import ru.yandex.practicum.filmorate.model.genre.Genre;
+import ru.yandex.practicum.filmorate.model.genre.GenreDto;
 import ru.yandex.practicum.filmorate.service.genre.GenreService;
 
 import java.util.List;
@@ -20,12 +20,12 @@ public class GenreController {
     private final GenreService genreService;
 
     @GetMapping
-    public List<Genre> getGenres() {
+    public List<GenreDto> getGenres() {
         return genreService.getGenres();
     }
 
     @GetMapping("/{genreId}")
-    public Genre getGenreById(@Valid @PathVariable Long genreId) {
+    public GenreDto getGenreById(@Valid @PathVariable Long genreId) {
         return genreService.getGenreById(genreId);
     }
 }

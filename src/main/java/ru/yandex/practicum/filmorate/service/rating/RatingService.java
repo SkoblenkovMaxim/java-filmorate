@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.rating.Rating;
+import ru.yandex.practicum.filmorate.model.rating.RatingDto;
+import ru.yandex.practicum.filmorate.model.rating.RatingMapper;
 import ru.yandex.practicum.filmorate.storage.raiting.RatingStorage;
 
 import java.util.List;
@@ -14,14 +16,16 @@ import java.util.List;
 public class RatingService {
 
     private final RatingStorage ratingStorage;
+    private final RatingMapper ratingMapper;
 
-    public List<Rating> getAllRating() {
-        return ratingStorage.getAllRating();
+    public List<RatingDto> getAllRating() {
+        return ratingStorage.getAllRating().stream().map(ratingMapper::ratingDto).toList();
     }
 
-    public Rating getRatingById(Integer id) {
+    public RatingDto getRatingById(Integer id) {
+
         Rating rating = ratingStorage.getRatingById(id);
         if (rating == null) throw new NotFoundException("id " + id + " не найден");
-        return rating;
+        return ratingMapper.ratingDto(rating);
     }
 }

@@ -164,7 +164,9 @@ public class FilmService {
         return filmMapper.toFilmDto(filmFromDb);
     }
 
-    public Collection<Film> getFilms() {
-        return filmStorage.getFilms();
+    public Collection<FilmDto> getFilms() {
+        return filmStorage.getFilms().stream()
+                .map(filmMapper::toFilmDto)
+                .collect(Collectors.toList());
     }
 }
