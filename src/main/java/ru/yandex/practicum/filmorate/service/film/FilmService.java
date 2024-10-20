@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.film.FilmDto;
+import ru.yandex.practicum.filmorate.model.film.FilmMapper;
 import ru.yandex.practicum.filmorate.model.genre.FilmGenre;
 import ru.yandex.practicum.filmorate.model.like.Like;
 import ru.yandex.practicum.filmorate.model.film.Film;
@@ -30,18 +32,21 @@ public class FilmService {
     private final LikeStorage likeStorage;
     private final GenreStorage genreStorage;
     private final RatingStorage ratingStorage;
+    private final FilmMapper filmMapper;
 
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
                        @Qualifier("likeDbStorage") LikeStorage likeStorage,
                        @Qualifier("userDbStorage") UserStorage userStorage,
                        @Qualifier("genreDbStorage") GenreStorage genreStorage,
-                       @Qualifier("ratingDbStorage") RatingStorage ratingStorage
+                       @Qualifier("ratingDbStorage") RatingStorage ratingStorage,
+                       FilmMapper filmMapper
     ) {
         this.filmStorage = filmStorage;
         this.likeStorage = likeStorage;
         this.userStorage = userStorage;
         this.genreStorage = genreStorage;
         this.ratingStorage = ratingStorage;
+        this.filmMapper = filmMapper;
     }
 
     // добавление лайка
@@ -68,18 +73,20 @@ public class FilmService {
     }
 
     // вывод 10 наиболее популярных фильмов по количеству лайков
-    public List<Film> getPopular(Integer count) {
+    public List<FilmDto> getPopular(Integer count) {
         if (count < 1) {
             throw new ValidationException("Количество фильмов для вывода не должно быть меньше 1");
         }
         return likeStorage
                 .getAllLikes()
                 .stream()
-                .map(like -> filmStorage.getFilm(like.getFilmId()))
+                .map(like -> filmMapper.toFilmDto(filmStorage.getFilm(like.getFilmId())))
                 .collect(Collectors.toList());
     }
 
-    public Film saveFilm(Film film) {
+    public FilmDto saveFilm(FilmDto filmDto) {
+        Film film = filmMapper.toFilm(filmDto);
+
         if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
             throw new ValidationException("Дата релиза фильма не должна быть ранее 28 декабря 1895 год");
         }
@@ -115,24 +122,31 @@ public class FilmService {
         }
 
         savedFilm.setGenres(film.getGenres());
-        return savedFilm;
+        return filmMapper.toFilmDto(savedFilm);
     }
 
     public void removeFilm(Long filmId) {
         filmStorage.removeFilm(filmId);
     }
 
-    public Film updateFilm(Film film) {
+    public FilmDto updateFilm(FilmDto filmDto) {
+        Film film = filmMapper.toFilm(filmDto);
+
         Film filmFromDb = filmStorage.getFilm(film.getId());
         if (filmFromDb != null) {
-            return filmStorage.updateFilm(film);
+            return filmMapper.toFilmDto(filmStorage.updateFilm(film));
         } else {
             throw new NotFoundException("id " + film.getId() + " не найден");
         }
     }
 
-    public Film getFilm(Long filmId) {
+    public FilmDto getFilm(Long filmId) {
         Film filmFromDb = filmStorage.getFilm(filmId);
+
+        if (filmFromDb == null) {
+            throw new NotFoundException("id " + filmId + " не найден");
+        }
+
         Rating rating = ratingStorage.getRatingById(filmFromDb.getMpa().getId());
         filmFromDb.getMpa().setName(rating.getName());
         filmFromDb.getMpa().setDescription(rating.getDescription());
@@ -147,7 +161,7 @@ public class FilmService {
         genreList.sort(Comparator.comparing(Genre::getId));
         filmFromDb.setGenres(genreList);
 
-        return filmFromDb;
+        return filmMapper.toFilmDto(filmFromDb);
     }
 
     public Collection<Film> getFilms() {

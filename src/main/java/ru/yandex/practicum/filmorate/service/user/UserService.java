@@ -124,7 +124,11 @@ public class UserService {
 
     //Проверка наличия пользователя в хранилище
     public boolean isValidUser(Long userId) {
-        return userStorage.getUserById(userId) == null;
+        if (userStorage.getUserById(userId) != null) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private void checkIfFriend(Long userId, Long friendId) {

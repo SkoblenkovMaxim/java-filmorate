@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller.rating;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,7 +24,7 @@ public class RatingController {
     }
 
     @GetMapping("/{id}")
-    public Rating getRatingById(@PathVariable int id) {
+    public Rating getRatingById(@Valid @PathVariable int id) {
         return ratingService.getRatingById(id);
     }
 }

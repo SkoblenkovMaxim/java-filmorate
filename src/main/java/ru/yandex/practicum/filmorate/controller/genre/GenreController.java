@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller.genre;
 
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,7 +25,7 @@ public class GenreController {
     }
 
     @GetMapping("/{genreId}")
-    public Genre getGenreById(@PathVariable Long genreId) {
+    public Genre getGenreById(@Valid @PathVariable Long genreId) {
         return genreService.getGenreById(genreId);
     }
 }
