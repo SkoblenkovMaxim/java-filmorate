@@ -27,7 +27,9 @@ public class FriendDbStorage implements FriendStorage {
         if (!getFriends(userId).contains(friendId) && !getFriends(friendId).contains(userId)) {
             jdbcTemplate.update(connection -> {
                 PreparedStatement statement = connection.prepareStatement(
-                        "INSERT INTO friends (user_id, friend_id, is_friend_status) VALUES(?, ?, ?)");
+                        "INSERT INTO friends (user_id, friend_id, is_friend_status) VALUES (?, ?, ?)",
+                        new String[]{"friends_id"}
+                );
                 statement.setLong(1, userId);
                 statement.setLong(2, friendId);
                 statement.setBoolean(3, isFriendStatus);

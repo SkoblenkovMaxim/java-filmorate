@@ -10,6 +10,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Friends {
+    private Long friendsId;
     @NotNull
     private Long userId;
     @NotNull

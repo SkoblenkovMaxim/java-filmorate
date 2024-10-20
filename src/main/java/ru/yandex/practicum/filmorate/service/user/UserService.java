@@ -101,21 +101,24 @@ public class UserService {
     }
 
     // вывод списка общих друзей
-    public List<Long> getCommonFriends(Long firstUserId, Long secondUserId) {
-        List<Long> firstUser = getFriends(firstUserId);
-        List<Long> secondUser = getFriends(secondUserId);
-        List<Long> commonFriends = new ArrayList<>();
+    public List<User> getCommonFriends(Long userId, Long friendId) {
+        log.info("Получение списка общих друзей пользователей {} и {}", userId, friendId);
 
-        if (isValidUser(firstUserId) || isValidUser(secondUserId)) {
-            log.debug("Пользователь с id={} не найден", firstUserId);
-            throw new NotFoundException("Пользователь с id=" + firstUserId + " не найден");
+        if (isValidUser(userId) || isValidUser(friendId)) {
+            log.debug("Пользователь с id={} не найден", userId);
+            throw new NotFoundException("Пользователь с id=" + userId + " не найден");
         }
-        log.info("Получение списка общих друзей пользователей {} и {}", firstUserId, secondUserId);
-        for (Long userId : firstUser) {
-            if (secondUser.contains(userId)) {
-                commonFriends.add(userId);
+
+        List<User> userFriends = getFriendsByUserId(userId);
+        List<User> friendFriends = getFriendsByUserId(friendId);
+        List<User> commonFriends = new ArrayList<>();
+
+        userFriends.forEach(userFriend -> {
+            if (friendFriends.contains(userFriend)) {
+                commonFriends.add(userFriend);
             }
-        }
+        });
+
         return commonFriends;
     }
 

@@ -36,7 +36,8 @@ CREATE TABLE IF NOT EXISTS film_likes (
 );
 
 CREATE TABLE IF NOT EXISTS friends (
-    user_id INT NOT NULL PRIMARY KEY,
+    friends_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
     friend_id INT,
     is_friend_status BOOLEAN
 );
