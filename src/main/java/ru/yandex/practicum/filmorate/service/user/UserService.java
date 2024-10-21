@@ -117,39 +117,37 @@ public class UserService {
     public List<UserDto> getCommonFriends(Long userId, Long friendId) {
         log.info("Получение списка общих друзей пользователей {} и {}", userId, friendId);
 
-        if (isValidUser(userId) || isValidUser(friendId)) {
-            log.debug("Пользователь с id={} не найден", userId);
-            throw new NotFoundException("Пользователь с id=" + userId + " не найден");
-        }
-
         List<UserDto> userFriends = getFriendsByUserId(userId);
         List<UserDto> friendFriends = getFriendsByUserId(friendId);
         List<UserDto> commonFriends = new ArrayList<>();
-
-        userFriends.forEach(userFriend -> {
+        
+        if (isValidUser(userId) || isValidUser(friendId)) {
+            userFriends.forEach(userFriend -> {
             if (friendFriends.contains(userFriend)) {
                 commonFriends.add(userFriend);
             }
-        });
-
+            });
         return commonFriends;
+        }
+        log.debug("Пользователь с id={} не найден", userId);
+        throw new NotFoundException("Пользователь с id=" + userId + " не найден");
     }
 
     //Проверка наличия пользователя в хранилище
     public boolean isValidUser(Long userId) {
-        return userStorage.getUserById(userId) == null;
+        return userStorage.getUserById(userId) != null;
     }
 
     private void checkIfFriend(Long userId, Long friendId) {
         log.debug("checkIfFriend({}, {})", userId, friendId);
+        if (userId.equals(friendId)) {
+            throw new NotFoundException("Attempt to add yourself into a friends list, the id is " + userId);
+        }
         if (!getUsers().contains(getUserById(userId))) {
             throw new NotFoundException(format("User with id %d wasn't found", userId));
         }
         if (!getUsers().contains(getUserById(friendId))) {
             throw new NotFoundException(format("User with id %d wasn't found", userId));
-        }
-        if (userId.equals(friendId)) {
-            throw new NotFoundException("Attempt to add yourself into a friends list, the id is " + userId);
         }
         if (friendStorage.isFriendStatus(userId, friendId)) {
             throw new RuntimeException(
@@ -159,15 +157,15 @@ public class UserService {
 
     private void checkIfNotFriend(Long userId, Long friendId) {
         log.debug("checkIfNotFriend({}, {})", userId, friendId);
+        if (userId.equals(friendId)) {
+            throw new NotFoundException(
+                    "Attempt to delete yourself from a friends list, the id is " + userId);
+        }
         if (!getUsers().contains(getUserById(userId))) {
             throw new NotFoundException(format("User with id %d wasn't found", userId));
         }
         if (!getUsers().contains(getUserById(friendId))) {
             throw new NotFoundException(format("User with id %d wasn't found", friendId));
-        }
-        if (userId.equals(friendId)) {
-            throw new NotFoundException(
-                    "Attempt to delete yourself from a friends list, the id is " + userId);
-        }
+        }        
     }
 }
