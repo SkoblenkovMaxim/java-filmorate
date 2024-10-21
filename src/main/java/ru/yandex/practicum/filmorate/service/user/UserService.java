@@ -120,7 +120,7 @@ public class UserService {
         List<UserDto> userFriends = getFriendsByUserId(userId);
         List<UserDto> friendFriends = getFriendsByUserId(friendId);
         List<UserDto> commonFriends = new ArrayList<>();
-        
+
         if (isValidUser(userId) || isValidUser(friendId)) {
             userFriends.forEach(userFriend -> {
                 if (friendFriends.contains(userFriend)) {
