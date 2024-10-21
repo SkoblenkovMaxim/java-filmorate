@@ -123,11 +123,11 @@ public class UserService {
         
         if (isValidUser(userId) || isValidUser(friendId)) {
             userFriends.forEach(userFriend -> {
-            if (friendFriends.contains(userFriend)) {
-                commonFriends.add(userFriend);
-            }
+                if (friendFriends.contains(userFriend)) {
+                    commonFriends.add(userFriend);
+                }
             });
-        return commonFriends;
+            return commonFriends;
         }
         log.debug("Пользователь с id={} не найден", userId);
         throw new NotFoundException("Пользователь с id=" + userId + " не найден");
@@ -166,6 +166,6 @@ public class UserService {
         }
         if (!getUsers().contains(getUserById(friendId))) {
             throw new NotFoundException(format("User with id %d wasn't found", friendId));
-        }        
+        }
     }
 }
