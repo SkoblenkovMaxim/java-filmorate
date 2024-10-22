@@ -1,20 +1,23 @@
 package ru.yandex.practicum.filmorate.model.film;
 
-import jakarta.validation.constraints.*;
-
-import lombok.*;
-import ru.yandex.practicum.filmorate.model.genre.Genre;
-import ru.yandex.practicum.filmorate.model.rating.Rating;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
+import lombok.*;
+import ru.yandex.practicum.filmorate.model.genre.Genre;
+import ru.yandex.practicum.filmorate.model.rating.Rating;
 
 @Builder
 @Getter
 @Setter
 @Data
 @AllArgsConstructor
-public class Film {
+public class FilmDto {
     private Long id; // целочисленный идентификатор
     @NotBlank (message = "Название фильма не может быть пустым")
     private String name; // название

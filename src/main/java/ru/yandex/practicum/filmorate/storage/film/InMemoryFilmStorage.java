@@ -24,42 +24,34 @@ public class InMemoryFilmStorage implements FilmStorage {
         newFilm.setId(idGenerator.getNextId());
 
         if (newFilm.getName() == null || newFilm.getName().isEmpty()) {
-            log.error("Название фильма не может быть пустым");
             throw new ValidationException("Название фильма не может быть пустым");
         }
 
         if (newFilm.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-            log.error("Дата релиза фильма не должна быть ранее 28 декабря 1895 год");
             throw new ValidationException("Дата релиза фильма не должна быть ранее 28 декабря 1895 год");
         }
 
         if (newFilm.getDescription() == null || newFilm.getDescription().isEmpty()) {
-            log.error("Должно быть добавлено описание фильма");
             throw new ValidationException("Должно быть добавлено описание фильма");
         }
 
         if (newFilm.getDuration() <= 0) {
-            log.error("Продолжительность фильма должна быть больше ноля");
             throw new ValidationException("Продолжительность фильма должна быть больше ноля");
         }
 
         films.put(newFilm.getId(), newFilm);
-        log.debug("Фильм {} успешно сохранен", newFilm);
         return newFilm;
     }
 
     public void removeFilm(Long filmId) {
         if (isValidFilm(filmId)) {
             films.remove(filmId);
-            log.debug("Фильм {} успешно удален", films.get(filmId).getName());
         }
-        log.error("Фильм не найден");
         throw new ValidationException("Фильм не найден");
     }
 
     public Film updateFilm(Film film) {
         if (film.getId() == null) {
-            log.error("Должен быть указан id фильма");
             throw new ValidationException("Должен быть указан id фильма");
         }
         if (isValidFilm(film.getId())) {
@@ -76,7 +68,6 @@ public class InMemoryFilmStorage implements FilmStorage {
             if (film.getDuration() > 0) {
                 oldFilm.setDuration(film.getDuration());
             }
-            log.debug("Фильм успешно обновлён");
             return oldFilm;
         }
         throw new NotFoundException("Фильм " + film.getId() + " - " + film.getName() + " не найден");
@@ -86,7 +77,6 @@ public class InMemoryFilmStorage implements FilmStorage {
         if (isValidFilm(filmId)) {
             return films.get(filmId);
         }
-        log.debug("Фильм с id={} не найден", filmId);
         throw new NotFoundException("Фильм с id=" + filmId + " не найден");
     }
 

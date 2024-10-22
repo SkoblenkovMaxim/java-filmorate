@@ -15,4 +15,6 @@ public interface UserStorage {
     Collection<User> getUsers(); // Получение всех пользователей
 
     User getUserById(Long userId); // Получение пользователя по id
+
+    boolean isContains(Long id); // Проверка наличия пользователя
 }
