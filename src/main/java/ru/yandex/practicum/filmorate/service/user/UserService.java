@@ -10,10 +10,14 @@ import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.film.Film;
+import ru.yandex.practicum.filmorate.model.film.FilmDto;
+import ru.yandex.practicum.filmorate.model.film.FilmMapper;
 import ru.yandex.practicum.filmorate.model.friend.Friends;
 import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.model.user.UserDto;
 import ru.yandex.practicum.filmorate.model.user.UserMapper;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.friend.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -25,14 +29,21 @@ public class UserService {
 
     private final UserStorage userStorage;
     private final FriendStorage friendStorage;
+
+    private final FilmStorage filmStorage;
     private final UserMapper userMapper;
+    private final FilmMapper filmMapper;
 
     public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
+                       @Qualifier("filmDbStorage") FilmStorage filmStorage,
                        FriendStorage friendStorage,
-                       UserMapper userMapper) {
+                       UserMapper userMapper,
+                       FilmMapper filmMapper) {
         this.userStorage = userStorage;
+        this.filmStorage = filmStorage;
         this.friendStorage = friendStorage;
         this.userMapper = userMapper;
+        this.filmMapper = filmMapper;
     }
 
     public UserDto createUser(UserDto userDto) {
@@ -168,4 +179,19 @@ public class UserService {
             throw new NotFoundException(format("User with id %d wasn't found", friendId));
         }
     }
+
+    public List<FilmDto> getUsersRecommendations(Long userId) {
+        //isValidUser(userId);
+        List<Film> recommendUserFilms = filmStorage.getUsersRecommendations(userId);
+        log.info("Список фильмов пересечений");
+        List<Film> userFilms = filmStorage.getFilmsLikesByUser(userId);
+        log.info("Список фильмов, которые лакнул пользователь {}", userId);
+        recommendUserFilms.removeAll(userFilms);
+        return recommendUserFilms
+                .stream()
+                .map(indexFilm -> filmStorage.getFilm(indexFilm.getId()))
+                .map(filmMapper::toFilmDto)
+                .toList();
+    }
+
 }
