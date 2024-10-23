@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.director.Director;
 import ru.yandex.practicum.filmorate.model.film.FilmDto;
 import ru.yandex.practicum.filmorate.model.film.FilmMapper;
 import ru.yandex.practicum.filmorate.model.genre.FilmGenre;
@@ -13,6 +14,7 @@ import ru.yandex.practicum.filmorate.model.like.Like;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.genre.Genre;
 import ru.yandex.practicum.filmorate.model.rating.Rating;
+import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.like.LikeStorage;
@@ -32,20 +34,23 @@ public class FilmService {
     private final LikeStorage likeStorage;
     private final GenreStorage genreStorage;
     private final RatingStorage ratingStorage;
+    private final DirectorStorage directorStorage;
     private final FilmMapper filmMapper;
 
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
-                       @Qualifier("likeDbStorage") LikeStorage likeStorage,
-                       @Qualifier("userDbStorage") UserStorage userStorage,
-                       @Qualifier("genreDbStorage") GenreStorage genreStorage,
-                       @Qualifier("ratingDbStorage") RatingStorage ratingStorage,
-                       FilmMapper filmMapper
+            @Qualifier("likeDbStorage") LikeStorage likeStorage,
+            @Qualifier("userDbStorage") UserStorage userStorage,
+            @Qualifier("genreDbStorage") GenreStorage genreStorage,
+            @Qualifier("ratingDbStorage") RatingStorage ratingStorage,
+            @Qualifier("directorDbStorage") DirectorStorage directorStorage,
+            FilmMapper filmMapper
     ) {
         this.filmStorage = filmStorage;
         this.likeStorage = likeStorage;
         this.userStorage = userStorage;
         this.genreStorage = genreStorage;
         this.ratingStorage = ratingStorage;
+        this.directorStorage = directorStorage;
         this.filmMapper = filmMapper;
     }
 
@@ -88,11 +93,11 @@ public class FilmService {
         Film film = filmMapper.toFilm(filmDto);
 
         if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-            throw new ValidationException("Дата релиза фильма не должна быть ранее 28 декабря 1895 год");
+            throw new ValidationException(
+                    "Дата релиза фильма не должна быть ранее 28 декабря 1895 год");
         }
 
         Film savedFilm = filmStorage.saveFilm(film);
-
         Rating mpa = ratingStorage.getRatingById(film.getMpa().getId());
 
         if (mpa == null) {
@@ -100,44 +105,69 @@ public class FilmService {
         }
 
         if (film.getGenres() != null) {
-            Set<FilmGenre> filmGenreSet = new HashSet<>();
-            film.getGenres().forEach(genre -> {
-                if (genre.getId() != null) {
-                    Genre genreFromDb = genreStorage.getGenreById(genre.getId());
-                    if (genreFromDb != null) {
-                        filmGenreSet.add(FilmGenre.builder()
-                                .filmId(savedFilm.getId())
-                                .genreId(genre.getId())
-                                .build());
-                    } else {
-                        throw new ValidationException("жанр для film id: " + film.getId() + " не найден");
-                    }
-                }
-            });
-            filmGenreSet.forEach(filmGenre ->
-                    genreStorage.createFilmGenre(FilmGenre.builder()
-                            .filmId(filmGenre.getFilmId())
-                            .genreId(filmGenre.getGenreId())
-                            .build()));
+            Set<FilmGenre> filmGenres = film.getGenres().stream()
+                    .filter(genre -> genre.getId() != null)
+                    .map(genre -> {
+                        Genre genreFromDb = genreStorage.getGenreById(genre.getId());
+                        if (genreFromDb == null) {
+                            throw new ValidationException(
+                                    "жанр для film id: " + film.getId() + " не найден");
+                        }
+                        return FilmGenre.builder().filmId(savedFilm.getId()).genreId(genre.getId())
+                                .build();
+                    }).collect(Collectors.toSet());
+            filmGenres.forEach(genreStorage::createFilmGenre);
         }
 
-        savedFilm.setGenres(film.getGenres());
-        return filmMapper.toFilmDto(savedFilm);
+        if (film.getDirectors() != null) {
+            List<Long> directorIds = film.getDirectors().stream()
+                    .filter(director -> director.getId() != null)
+                    .map(director -> {
+                        Director directorFromDb = directorStorage.getDirectorById(director.getId());
+                        if (directorFromDb == null) {
+                            throw new ValidationException(
+                                    "режиссёр для film id: " + film.getId() + " не найден");
+                        }
+                        return director.getId();
+                    }).collect(Collectors.toList());
+            directorStorage.addDirectorsToFilm(savedFilm.getId(), directorIds);
+        }
+
+        return getFilm(savedFilm.getId());
     }
 
     public void removeFilm(Long filmId) {
+        directorStorage.removeDirectorsFromFilm(filmId);
         filmStorage.removeFilm(filmId);
     }
 
     public FilmDto updateFilm(FilmDto filmDto) {
         Film film = filmMapper.toFilm(filmDto);
+        System.out.println(film);
 
         Film filmFromDb = filmStorage.getFilm(film.getId());
-        if (filmFromDb != null) {
-            return filmMapper.toFilmDto(filmStorage.updateFilm(film));
-        } else {
+        if (filmFromDb == null) {
             throw new NotFoundException("id " + film.getId() + " не найден");
         }
+
+        filmStorage.updateFilm(film);
+        directorStorage.removeDirectorsFromFilm(film.getId());
+
+        if (film.getDirectors() != null) {
+            List<Long> directorIds = film.getDirectors().stream()
+                    .filter(director -> director.getId() != null)
+                    .map(director -> {
+                        Director directorFromDb = directorStorage.getDirectorById(director.getId());
+                        if (directorFromDb == null) {
+                            throw new ValidationException(
+                                    "режиссёр с id: " + director.getId() + " не найден");
+                        }
+                        return director.getId();
+                    }).collect(Collectors.toList());
+            directorStorage.addDirectorsToFilm(film.getId(), directorIds);
+        }
+
+        return getFilm(filmFromDb.getId());
     }
 
     public FilmDto getFilm(Long filmId) {
@@ -147,26 +177,69 @@ public class FilmService {
             throw new NotFoundException("id " + filmId + " не найден");
         }
 
-        Rating rating = ratingStorage.getRatingById(filmFromDb.getMpa().getId());
-        filmFromDb.getMpa().setName(rating.getName());
-        filmFromDb.getMpa().setDescription(rating.getDescription());
-
-        List<Genre> genreList = new ArrayList<>();
-        genreStorage.getFilmGenresByFilmId(filmFromDb.getId())
-                .forEach(filmGenre -> {
-                            Genre genre = genreStorage.getGenreById(filmGenre.getGenreId());
-                            genreList.add(genre);
-                        }
-                );
-        genreList.sort(Comparator.comparing(Genre::getId));
-        filmFromDb.setGenres(genreList);
+        fillFilmAdditionalInfo(filmFromDb);
 
         return filmMapper.toFilmDto(filmFromDb);
     }
 
     public Collection<FilmDto> getFilms() {
-        return filmStorage.getFilms().stream()
+        Collection<Film> films = filmStorage.getFilms();
+
+        films.forEach(this::fillFilmAdditionalInfo);
+
+        return films.stream()
                 .map(filmMapper::toFilmDto)
                 .collect(Collectors.toList());
+    }
+
+    public List<FilmDto> getFilmsByDirector(Long directorId, String sortBy) {
+        if (!"year".equals(sortBy) && !"likes".equals(sortBy)) {
+            throw new ValidationException("параметр sortBy должен быть 'year' или 'likes'");
+        }
+
+        Director director = directorStorage.getDirectorById(directorId);
+        if (director == null) {
+            throw new NotFoundException("режиссёр с id: " + directorId + " не найден");
+        }
+
+        List<Film> films = filmStorage.getFilmsByDirector(directorId);
+
+        films.forEach(this::fillFilmAdditionalInfo);
+
+        if ("year".equals(sortBy)) {
+            films.sort(Comparator.comparing(Film::getReleaseDate));
+        } else {
+            films.sort((f1, f2) -> {
+                int likes1 = likeStorage.getLikesCount(f1.getId());
+                int likes2 = likeStorage.getLikesCount(f2.getId());
+                return Integer.compare(likes2, likes1);
+            });
+        }
+
+        return films.stream()
+                .map(filmMapper::toFilmDto)
+                .collect(Collectors.toList());
+    }
+
+    private void fillFilmAdditionalInfo(Film film) {
+        Rating rating = ratingStorage.getRatingById(film.getMpa().getId());
+        if (rating != null) {
+            film.getMpa().setName(rating.getName());
+            film.getMpa().setDescription(rating.getDescription());
+        }
+
+        List<Genre> genreList = new ArrayList<>();
+        genreStorage.getFilmGenresByFilmId(film.getId())
+                .forEach(filmGenre -> {
+                    Genre genre = genreStorage.getGenreById(filmGenre.getGenreId());
+                    if (genre != null) {
+                        genreList.add(genre);
+                    }
+                });
+        genreList.sort(Comparator.comparing(Genre::getId));
+        film.setGenres(genreList);
+
+        List<Director> directors = directorStorage.getDirectorsByFilmId(film.getId());
+        film.setDirectors(directors);
     }
 }

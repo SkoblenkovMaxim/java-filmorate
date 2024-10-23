@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.List;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -129,6 +130,14 @@ public class FilmDbStorage implements FilmStorage {
                 GET_ALL_FILMS_QUERY,
                 FilmDbStorage::mapRow
         );
+    }
+
+    @Override
+    public List<Film> getFilmsByDirector(Long directorId) {
+        String sql = "SELECT f.* FROM films f " +
+                "JOIN film_directors fd ON f.film_id = fd.film_id " +
+                "WHERE fd.director_id = ?";
+        return jdbcTemplate.query(sql, FilmDbStorage::mapRow, directorId);
     }
 
     private static Film mapRow(ResultSet rs, int i) throws SQLException {

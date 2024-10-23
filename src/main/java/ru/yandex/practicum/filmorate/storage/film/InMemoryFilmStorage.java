@@ -84,6 +84,11 @@ public class InMemoryFilmStorage implements FilmStorage {
         return films.values();
     }
 
+    @Override
+    public List<Film> getFilmsByDirector(Long directorId) {
+        return List.of();
+    }
+
     public boolean isValidFilm(Long filmId) {
         return films.containsKey(filmId);
     }
