@@ -52,19 +52,12 @@ public class FilmDbStorage implements FilmStorage {
             WHERE film_id = ?
             """;
 
-
-
-    // находим список фильмов, которые лайкнул пользователь
-
     private static final String FIND_FILMS_BY_USER_LIKES = """
             SELECT f.*
             FROM films f
             LEFT JOIN film_likes fl ON f.film_id = fl.film_id
             WHERE fl.user_id = ?
             """;
-
-
-    // находим список фильмов с пересечениями
 
     private static final String FIND_RECOMMEND_FILMS_BY_USER_ID = """
             SELECT f.*
