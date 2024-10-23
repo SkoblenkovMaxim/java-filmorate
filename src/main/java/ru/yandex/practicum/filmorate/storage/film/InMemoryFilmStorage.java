@@ -84,6 +84,16 @@ public class InMemoryFilmStorage implements FilmStorage {
         return films.values();
     }
 
+    @Override
+    public List<Film> getUsersRecommendations(Long userId) {
+        return null;
+    }
+
+    @Override
+    public List<Film> getFilmsLikesByUser(Long userId) {
+        return null;
+    }
+
     public boolean isValidFilm(Long filmId) {
         return films.containsKey(filmId);
     }

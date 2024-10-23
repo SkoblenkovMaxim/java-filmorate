@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -49,6 +50,36 @@ public class FilmDbStorage implements FilmStorage {
                 duration = ?,
                 rating_id = ?
             WHERE film_id = ?
+            """;
+
+
+
+    // находим список фильмов, которые лайкнул пользователь
+
+    private static final String FIND_FILMS_BY_USER_LIKES = """
+            SELECT f.*
+            FROM films f
+            LEFT JOIN film_likes fl ON f.film_id = fl.film_id
+            WHERE fl.user_id = ?
+            """;
+
+
+    // находим список фильмов с пересечениями
+
+    private static final String FIND_RECOMMEND_FILMS_BY_USER_ID = """
+            SELECT f.*
+            FROM films f
+            LEFT JOIN film_likes fl3 ON f.film_id = fl3.film_id
+            WHERE fl3.user_id IN (SELECT fl2.user_id
+                                 FROM film_likes AS fl2
+                                 WHERE fl2.user_id != ?
+                                 AND fl2.film_id IN (SELECT fl1.film_id
+                                                       FROM film_likes AS fl1
+                                                       WHERE fl1.user_id = ?)
+                                 GROUP BY fl2.user_id
+                                 ORDER BY COUNT(fl2.film_id) DESC
+                LIMIT 1
+                )
             """;
 
     private final JdbcTemplate jdbcTemplate;
@@ -129,6 +160,29 @@ public class FilmDbStorage implements FilmStorage {
                 GET_ALL_FILMS_QUERY,
                 FilmDbStorage::mapRow
         );
+    }
+
+    @Override
+    public List<Film> getFilmsLikesByUser(Long userId) {
+        return jdbcTemplate.query(FIND_FILMS_BY_USER_LIKES,
+                FilmDbStorage::mapRow1,
+                userId);
+    }
+    @Override
+    public List<Film> getUsersRecommendations(Long userId) {
+        return  jdbcTemplate.query(FIND_RECOMMEND_FILMS_BY_USER_ID,
+                FilmDbStorage::mapRow1,
+                userId, userId);
+    }
+
+    private static Film mapRow1(ResultSet rs, int i) throws SQLException {
+        return Film.builder()
+                .id(rs.getLong("film_id"))
+                .name(rs.getString("name"))
+                .description(rs.getString("description"))
+                .releaseDate(rs.getDate("release_date").toLocalDate())
+                .duration(rs.getInt("duration"))
+                .build();
     }
 
     private static Film mapRow(ResultSet rs, int i) throws SQLException {
