@@ -29,7 +29,6 @@ public class UserService {
 
     private final UserStorage userStorage;
     private final FriendStorage friendStorage;
-
     private final FilmStorage filmStorage;
     private final UserMapper userMapper;
     private final FilmMapper filmMapper;
@@ -144,6 +143,20 @@ public class UserService {
         throw new NotFoundException("Пользователь с id=" + userId + " не найден");
     }
 
+    public List<FilmDto> getUsersRecommendations(Long userId) {
+        //isValidUser(userId);
+        List<Film> recommendUserFilms = filmStorage.getUsersRecommendations(userId);
+        log.info("Список фильмов пересечений");
+        List<Film> userFilms = filmStorage.getFilmsLikesByUser(userId);
+        log.info("Список фильмов, которые лайкнул пользователь {}", userId);
+        recommendUserFilms.removeAll(userFilms);
+        return recommendUserFilms
+                .stream()
+                .map(indexFilm -> filmStorage.getFilm(indexFilm.getId()))
+                .map(filmMapper::toFilmDto)
+                .toList();
+    }
+
     //Проверка наличия пользователя в хранилище
     public boolean isValidUser(Long userId) {
         return userStorage.getUserById(userId) != null;
@@ -179,19 +192,4 @@ public class UserService {
             throw new NotFoundException(format("User with id %d wasn't found", friendId));
         }
     }
-
-    public List<FilmDto> getUsersRecommendations(Long userId) {
-        //isValidUser(userId);
-        List<Film> recommendUserFilms = filmStorage.getUsersRecommendations(userId);
-        log.info("Список фильмов пересечений");
-        List<Film> userFilms = filmStorage.getFilmsLikesByUser(userId);
-        log.info("Список фильмов, которые лакнул пользователь {}", userId);
-        recommendUserFilms.removeAll(userFilms);
-        return recommendUserFilms
-                .stream()
-                .map(indexFilm -> filmStorage.getFilm(indexFilm.getId()))
-                .map(filmMapper::toFilmDto)
-                .toList();
-    }
-
 }

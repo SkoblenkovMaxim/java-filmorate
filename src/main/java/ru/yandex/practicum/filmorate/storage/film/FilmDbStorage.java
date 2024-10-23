@@ -161,9 +161,10 @@ public class FilmDbStorage implements FilmStorage {
                 FilmDbStorage::mapRow1,
                 userId);
     }
+
     @Override
     public List<Film> getUsersRecommendations(Long userId) {
-        return  jdbcTemplate.query(FIND_RECOMMEND_FILMS_BY_USER_ID,
+        return jdbcTemplate.query(FIND_RECOMMEND_FILMS_BY_USER_ID,
                 FilmDbStorage::mapRow1,
                 userId, userId);
     }
