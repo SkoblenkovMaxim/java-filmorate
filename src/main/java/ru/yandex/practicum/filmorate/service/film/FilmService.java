@@ -29,6 +29,8 @@ import java.util.stream.Collectors;
 @Service
 public class FilmService {
 
+    private static final LocalDate EARLIEST_RELEASE_DATE = LocalDate.of(1895, 12, 28);
+
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
     private final LikeStorage likeStorage;
@@ -92,7 +94,7 @@ public class FilmService {
     public FilmDto saveFilm(FilmDto filmDto) {
         Film film = filmMapper.toFilm(filmDto);
 
-        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
+        if (film.getReleaseDate().isBefore(EARLIEST_RELEASE_DATE)) {
             throw new ValidationException(
                     "Дата релиза фильма не должна быть ранее 28 декабря 1895 год");
         }
