@@ -56,7 +56,7 @@ public class FilmDbStorage implements FilmStorage {
     private final String SEARCH_FILM_QUERY = "SELECT DISTINCT films.*, L.cnt FROM films " +
             "LEFT JOIN film_directors ON films.film_id = film_directors.film_id " +
             "LEFT JOIN directors ON film_directors.director_id = directors.director_id " +
-            "INNER JOIN (SELECT film_id,count(DISTINCT user_id) cnt FROM film_likes GROUP BY film_id) AS L ON films.film_id = L.film_id ";
+            "LEFT JOIN (SELECT film_id,count(DISTINCT user_id) cnt FROM film_likes GROUP BY film_id) AS L ON films.film_id = L.film_id ";
 
 
     private final JdbcTemplate jdbcTemplate;
