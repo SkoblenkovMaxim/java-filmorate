@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
+import java.util.List;
 import ru.yandex.practicum.filmorate.model.film.Film;
 
 import java.util.Collection;
@@ -15,4 +16,6 @@ public interface FilmStorage {
     Film getFilm(Long filmId);
 
     Collection<Film> getFilms();
+
+    List<Film> getFilmsByDirector(Long directorId);
 }
