@@ -29,12 +29,18 @@ public class LikeDbStorage implements LikeStorage {
             DELETE FROM film_likes WHERE like_id = ? AND film_id = ?
             """;
 
+    @SuppressWarnings("all")
+    private static final String GET_LIKES_COUNT_QUERY = """
+            SELECT COUNT(*) FROM film_likes WHERE film_id = ?
+            """;
+
     private final JdbcTemplate jdbcTemplate;
 
     @Override
     public void createLike(Like like) {
         jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(CREATE_QUERY, new String[]{"like_id"});
+            PreparedStatement ps = connection.prepareStatement(CREATE_QUERY,
+                    new String[]{"like_id"});
             ps.setLong(1, like.getFilmId());
             ps.setLong(2, like.getUserId());
             return ps;
@@ -59,6 +65,16 @@ public class LikeDbStorage implements LikeStorage {
         );
     }
 
+    @Override
+    public int getLikesCount(Long filmId) {
+        Integer count = jdbcTemplate.queryForObject(
+                GET_LIKES_COUNT_QUERY,
+                Integer.class,
+                filmId
+        );
+        return count != null ? count : 0;
+    }
+
     private static Like resultSetToLike(ResultSet rs, int i) throws SQLException {
         return Like.builder()
                 .id(rs.getLong("like_id"))
@@ -66,5 +82,4 @@ public class LikeDbStorage implements LikeStorage {
                 .userId(rs.getLong("user_id"))
                 .build();
     }
-
 }
