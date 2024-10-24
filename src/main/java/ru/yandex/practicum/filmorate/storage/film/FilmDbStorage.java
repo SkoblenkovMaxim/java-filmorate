@@ -54,7 +54,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @SuppressWarnings("all")
     private static final String GET_FILMS_BY_DIRECTOR_QUERY = """
-            SELECT f.* 
+            SELECT f.*
             FROM films f
             JOIN film_directors fd ON f.film_id = fd.film_id
             WHERE fd.director_id = ?
