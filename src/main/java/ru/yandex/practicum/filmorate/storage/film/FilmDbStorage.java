@@ -53,14 +53,14 @@ public class FilmDbStorage implements FilmStorage {
             """;
 
     private static final String FIND_FILMS_BY_USER_LIKES = """
-            SELECT f.*
+            SELECT f.film_id
             FROM films f
             LEFT JOIN film_likes fl ON f.film_id = fl.film_id
             WHERE fl.user_id = ?
             """;
 
     private static final String FIND_RECOMMEND_FILMS_BY_USER_ID = """
-            SELECT f.*
+            SELECT f.film_id
             FROM films f
             LEFT JOIN film_likes fl3 ON f.film_id = fl3.film_id
             WHERE fl3.user_id IN (SELECT fl2.user_id
@@ -156,27 +156,17 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getFilmsLikesByUser(Long userId) {
-        return jdbcTemplate.query(FIND_FILMS_BY_USER_LIKES,
-                FilmDbStorage::mapRow1,
+    public List<Long> getFilmsLikesByUser(Long userId) {
+        return jdbcTemplate.queryForList(FIND_FILMS_BY_USER_LIKES,
+                Long.class,
                 userId);
     }
 
     @Override
-    public List<Film> getUsersRecommendations(Long userId) {
-        return jdbcTemplate.query(FIND_RECOMMEND_FILMS_BY_USER_ID,
-                FilmDbStorage::mapRow1,
+    public List<Long> getUsersRecommendations(Long userId) {
+        return jdbcTemplate.queryForList(FIND_RECOMMEND_FILMS_BY_USER_ID,
+                Long.class,
                 userId, userId);
-    }
-
-    private static Film mapRow1(ResultSet rs, int i) throws SQLException {
-        return Film.builder()
-                .id(rs.getLong("film_id"))
-                .name(rs.getString("name"))
-                .description(rs.getString("description"))
-                .releaseDate(rs.getDate("release_date").toLocalDate())
-                .duration(rs.getInt("duration"))
-                .build();
     }
 
     private static Film mapRow(ResultSet rs, int i) throws SQLException {

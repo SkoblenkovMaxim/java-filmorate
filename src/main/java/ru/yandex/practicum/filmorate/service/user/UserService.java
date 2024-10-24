@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.film.FilmDto;
 import ru.yandex.practicum.filmorate.model.film.FilmMapper;
 import ru.yandex.practicum.filmorate.model.friend.Friends;
@@ -145,14 +144,14 @@ public class UserService {
 
     public List<FilmDto> getUsersRecommendations(Long userId) {
         //isValidUser(userId);
-        List<Film> recommendUserFilms = filmStorage.getUsersRecommendations(userId);
+        List<Long> recommendUserFilms = filmStorage.getUsersRecommendations(userId);
         log.info("Список фильмов пересечений");
-        List<Film> userFilms = filmStorage.getFilmsLikesByUser(userId);
+        List<Long> userFilms = filmStorage.getFilmsLikesByUser(userId);
         log.info("Список фильмов, которые лайкнул пользователь {}", userId);
         recommendUserFilms.removeAll(userFilms);
         return recommendUserFilms
                 .stream()
-                .map(indexFilm -> filmStorage.getFilm(indexFilm.getId()))
+                .map(filmStorage::getFilm)
                 .map(filmMapper::toFilmDto)
                 .toList();
     }
