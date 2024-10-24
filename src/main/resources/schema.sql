@@ -6,6 +6,9 @@ DROP TABLE IF EXISTS friends CASCADE;
 DROP TABLE IF EXISTS film_genres CASCADE;
 DROP TABLE IF EXISTS genres CASCADE;
 
+DROP TABLE IF EXISTS film_directors CASCADE;
+DROP TABLE IF EXISTS directors CASCADE;
+
 CREATE TABLE IF NOT EXISTS films (
     film_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -51,4 +54,17 @@ CREATE TABLE IF NOT EXISTS film_genres (
 CREATE TABLE IF NOT EXISTS genres (
     genre_id INT NOT NULL PRIMARY KEY,
     name VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS directors
+(
+    director_id INT          NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    name        VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS film_directors
+(
+    film_director_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    film_id          INT,
+    director_id      INT
 );
