@@ -52,6 +52,14 @@ public class FilmDbStorage implements FilmStorage {
             WHERE film_id = ?
             """;
 
+    @SuppressWarnings("all")
+    private static final String GET_FILMS_BY_DIRECTOR_QUERY = """
+            SELECT f.* 
+            FROM films f
+            JOIN film_directors fd ON f.film_id = fd.film_id
+            WHERE fd.director_id = ?
+            """;
+
     private final JdbcTemplate jdbcTemplate;
 
     @Override
@@ -59,7 +67,8 @@ public class FilmDbStorage implements FilmStorage {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(CREATE_QUERY, new String[]{"film_id"});
+            PreparedStatement ps = connection.prepareStatement(CREATE_QUERY,
+                    new String[]{"film_id"});
             ps.setString(1, film.getName());
             ps.setString(2, film.getDescription());
             ps.setDate(3, Date.valueOf(film.getReleaseDate()));
@@ -134,10 +143,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getFilmsByDirector(Long directorId) {
-        String sql = "SELECT f.* FROM films f " +
-                "JOIN film_directors fd ON f.film_id = fd.film_id " +
-                "WHERE fd.director_id = ?";
-        return jdbcTemplate.query(sql, FilmDbStorage::mapRow, directorId);
+        return jdbcTemplate.query(GET_FILMS_BY_DIRECTOR_QUERY, FilmDbStorage::mapRow, directorId);
     }
 
     private static Film mapRow(ResultSet rs, int i) throws SQLException {
