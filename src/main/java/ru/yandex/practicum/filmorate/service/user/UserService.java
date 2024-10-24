@@ -143,7 +143,9 @@ public class UserService {
     }
 
     public List<FilmDto> getUsersRecommendations(Long userId) {
-        //isValidUser(userId);
+        if (!isValidUser(userId)) {
+            throw new NotFoundException("Пользователь с id=" + userId + " не найден");
+        }
         List<Long> recommendUserFilms = filmStorage.getUsersRecommendations(userId);
         log.info("Список фильмов пересечений");
         List<Long> userFilms = filmStorage.getFilmsLikesByUser(userId);
