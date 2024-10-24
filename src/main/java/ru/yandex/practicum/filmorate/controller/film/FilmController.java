@@ -61,4 +61,11 @@ public class FilmController {
     public FilmDto getFilm(@Valid @PathVariable Long filmId) {
         return filmService.getFilm(filmId);
     }
+
+    //GET /films/search?query=крад&by=director,title
+    //+BZ
+    @GetMapping("/search")
+    public List<FilmDto> getSearch(@RequestParam String query, @RequestParam String by) {
+        return filmService.getSearch(query, by);
+    }
 }

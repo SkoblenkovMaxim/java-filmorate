@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.film.FilmDto;
@@ -81,6 +82,7 @@ public class FilmService {
                 .getAllLikes()
                 .stream()
                 .map(like -> filmMapper.toFilmDto(filmStorage.getFilm(like.getFilmId())))
+                .limit(count)
                 .collect(Collectors.toList());
     }
 
@@ -169,4 +171,13 @@ public class FilmService {
                 .map(filmMapper::toFilmDto)
                 .collect(Collectors.toList());
     }
+
+    //GET /films/search?query=крад&by=director,title
+    //+BZ
+    public List<FilmDto> getSearch(String query, String by) {
+        return filmStorage.getSearch(query, by).stream()
+                .map(filmMapper::toFilmDto)
+                .collect(Collectors.toList());
+    }
+
 }

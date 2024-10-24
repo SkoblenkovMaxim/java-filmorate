@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -50,6 +51,13 @@ public class FilmDbStorage implements FilmStorage {
                 rating_id = ?
             WHERE film_id = ?
             """;
+
+    //+BZ
+    private final String SEARCH_FILM_QUERY = "SELECT DISTINCT films.*, L.cnt FROM films " +
+            "LEFT JOIN film_directors ON films.film_id = film_directors.film_id " +
+            "LEFT JOIN directors ON film_directors.director_id = directors.director_id " +
+            "INNER JOIN (SELECT film_id,count(DISTINCT user_id) cnt FROM film_likes GROUP BY film_id) AS L ON films.film_id = L.film_id ";
+
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -141,4 +149,34 @@ public class FilmDbStorage implements FilmStorage {
                 .mpa(Rating.builder().id(rs.getInt("rating_id")).build())
                 .build();
     }
+
+    //GET /films/search?query=крад&by=director,title
+    //+BZ
+    @Override
+    public List<Film> getSearch(String query, String by) {
+        String modQuery = " WHERE ";
+
+        int countParam = 0;
+        if (by.toLowerCase().contains("director")) {
+            modQuery += "lower(directors.name) like '%" + query.toLowerCase() + "%'";
+            countParam += 1;
+        }
+
+        if (by.toLowerCase().contains("title")) {
+            if (countParam > 0) {
+                modQuery += " OR ";
+            }
+            modQuery += "lower(films.name) like '%" + query.toLowerCase() + "%'";
+            countParam += 1;
+        }
+
+        modQuery += " ORDER BY L.cnt DESC ";
+
+        List<Film> films = jdbcTemplate.query(
+                SEARCH_FILM_QUERY + modQuery,
+                FilmDbStorage::mapRow
+        );
+        return films;
+    }
+
 }
