@@ -5,8 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.Objects;
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -58,6 +58,29 @@ public class FilmDbStorage implements FilmStorage {
             FROM films f
             JOIN film_directors fd ON f.film_id = fd.film_id
             WHERE fd.director_id = ?
+            """;
+
+    private static final String FIND_FILMS_BY_USER_LIKES = """
+            SELECT f.film_id
+            FROM films f
+            LEFT JOIN film_likes fl ON f.film_id = fl.film_id
+            WHERE fl.user_id = ?
+            """;
+
+    private static final String FIND_RECOMMEND_FILMS_BY_USER_ID = """
+            SELECT f.film_id
+            FROM films f
+            LEFT JOIN film_likes fl3 ON f.film_id = fl3.film_id
+            WHERE fl3.user_id IN (SELECT fl2.user_id
+                                 FROM film_likes AS fl2
+                                 WHERE fl2.user_id != ?
+                                 AND fl2.film_id IN (SELECT fl1.film_id
+                                                       FROM film_likes AS fl1
+                                                       WHERE fl1.user_id = ?)
+                                 GROUP BY fl2.user_id
+                                 ORDER BY COUNT(fl2.film_id) DESC
+                LIMIT 1
+                )
             """;
 
     private final JdbcTemplate jdbcTemplate;
@@ -144,6 +167,20 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getFilmsByDirector(Long directorId) {
         return jdbcTemplate.query(GET_FILMS_BY_DIRECTOR_QUERY, FilmDbStorage::mapRow, directorId);
+    }
+
+    @Override
+    public List<Long> getFilmsLikesByUser(Long userId) {
+        return jdbcTemplate.queryForList(FIND_FILMS_BY_USER_LIKES,
+                Long.class,
+                userId);
+    }
+
+    @Override
+    public List<Long> getUsersRecommendations(Long userId) {
+        return jdbcTemplate.queryForList(FIND_RECOMMEND_FILMS_BY_USER_ID,
+                Long.class,
+                userId, userId);
     }
 
     private static Film mapRow(ResultSet rs, int i) throws SQLException {
