@@ -5,10 +5,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.event.Event;
+import ru.yandex.practicum.filmorate.model.event.EventOperation;
+import ru.yandex.practicum.filmorate.model.event.EventType;
 import ru.yandex.practicum.filmorate.model.friend.Friends;
+import ru.yandex.practicum.filmorate.storage.event.EventStorage;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -19,6 +25,7 @@ import java.util.stream.Collectors;
 public class FriendDbStorage implements FriendStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final EventStorage eventStorage;
 
     @SuppressWarnings("all")
     @Override
@@ -36,6 +43,7 @@ public class FriendDbStorage implements FriendStorage {
                 log.info("Added friend: {}", friendId);
                 return statement;
             });
+            createEvent(userId, friendId, EventOperation.ADD);
         }
 
         if (isFriendStatus(userId, friendId)) {
@@ -46,6 +54,7 @@ public class FriendDbStorage implements FriendStorage {
                 statement.setLong(2, friendId);
                 return statement;
             });
+            createEvent(userId, friendId, EventOperation.UPDATE);
         }
     }
 
@@ -57,6 +66,7 @@ public class FriendDbStorage implements FriendStorage {
         if (friends.isFriendStatus()) {
             jdbcTemplate.update("UPDATE friends SET is_friend_status=false WHERE user_id=? AND friend_id=?",
                     userId, friendId);
+            createEvent(userId, friendId, EventOperation.REMOVE);
             log.debug("The friendship between {} and {} is over", userId, friendId);
         }
         log.info("Не найден friend: {}", friends);
@@ -112,5 +122,16 @@ public class FriendDbStorage implements FriendStorage {
         friend.setFriendId(rs.getLong("friend_id"));
         friend.setFriendStatus(rs.getBoolean("is_friend_status"));
         return friend;
+    }
+
+    private void createEvent(Long userId, Long friendId, EventOperation eventOperation) {
+        Event event = Event.builder()
+                .eventType(EventType.FRIEND)
+                .eventOperation(eventOperation)
+                .entityId(friendId)
+                .userId(userId)
+                .timestamp(LocalDateTime.now())
+                .build();
+        eventStorage.addEvent(event);
     }
 }

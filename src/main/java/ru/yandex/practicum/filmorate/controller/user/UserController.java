@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import ru.yandex.practicum.filmorate.model.event.Event;
 import ru.yandex.practicum.filmorate.model.user.UserDto;
+import ru.yandex.practicum.filmorate.service.event.EventService;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 
 @Slf4j
@@ -23,9 +25,11 @@ import ru.yandex.practicum.filmorate.service.user.UserService;
 public class UserController {
 
     private final UserService userService;
+    private final EventService eventService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, EventService eventService) {
         this.userService = userService;
+        this.eventService = eventService;
     }
 
     @PostMapping
@@ -71,5 +75,10 @@ public class UserController {
     @GetMapping("/{id}/friends/common/{friendId}")
     public List<UserDto> getCommonFriends(@Valid @PathVariable Long id, @Valid @PathVariable Long friendId) {
         return userService.getCommonFriends(id, friendId);
+    }
+
+    @GetMapping("/{userId}/feed")
+    public List<Event> getAllUserEvents(@PathVariable Long userId) {
+        return eventService.getAllUserEvents(userId);
     }
 }
