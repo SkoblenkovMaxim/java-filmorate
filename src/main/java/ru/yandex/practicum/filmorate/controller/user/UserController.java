@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import ru.yandex.practicum.filmorate.model.film.FilmDto;
 import ru.yandex.practicum.filmorate.model.user.UserDto;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 
@@ -71,5 +72,10 @@ public class UserController {
     @GetMapping("/{id}/friends/common/{friendId}")
     public List<UserDto> getCommonFriends(@Valid @PathVariable Long id, @Valid @PathVariable Long friendId) {
         return userService.getCommonFriends(id, friendId);
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public List<FilmDto> getUsersRecommendations(@PathVariable("id") long userId) {
+        return userService.getUsersRecommendations(userId);
     }
 }
