@@ -83,7 +83,6 @@ public class FilmDbStorage implements FilmStorage {
                 )
             """;
 
-    //+BZ
     @SuppressWarnings("all")
     private static final String SEARCH_FILM_QUERY = """
             SELECT DISTINCT films.*, L.cnt FROM films
@@ -205,8 +204,6 @@ public class FilmDbStorage implements FilmStorage {
                 .build();
     }
 
-    //GET /films/search?query=крад&by=director,title
-    //+BZ
     @Override
     public List<Film> getSearch(String query, String by) {
         String modQuery = " WHERE ";

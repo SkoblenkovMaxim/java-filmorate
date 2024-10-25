@@ -246,12 +246,12 @@ public class FilmService {
         film.setDirectors(directors);
     }
 
-    //GET /films/search?query=крад&by=director,title
-    //+BZ
     public List<FilmDto> getSearch(String query, String by) {
-        return filmStorage.getSearch(query, by).stream()
+        List<Film> films = filmStorage.getSearch(query, by);
+
+        films.forEach(this::fillFilmAdditionalInfo);
+        return films.stream()
                 .map(filmMapper::toFilmDto)
                 .collect(Collectors.toList());
     }
-
 }
