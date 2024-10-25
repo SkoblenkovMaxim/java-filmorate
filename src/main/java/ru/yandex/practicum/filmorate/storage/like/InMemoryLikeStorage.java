@@ -32,6 +32,7 @@ public class InMemoryLikeStorage {
         this.userStorage = userStorage;
     }
 
+/*
     public void addLike(Long filmId, Long userId) {
         Film film = filmStorage.getFilm(filmId);
 
@@ -63,11 +64,15 @@ public class InMemoryLikeStorage {
 
         log.info("Фильм {} добавлен в хранилище лайков", filmId);
 
-        // Увеличиваем количество лайков для фильма
-        likesUser.put(filmId, film.getLikes().size());
-        log.info("Количество лайков фильма {} = {}", filmId, likesUser.get(filmId));
+        /*
+         Увеличиваем количество лайков для фильма
+         likesUser.put(filmId, film.getLikes().size());
+         log.info("Количество лайков фильма {} = {}", filmId, likesUser.get(filmId));
+        * /
     }
+*/
 
+/*
     public void deleteLike(Long filmId, Long userId) {
         Film film = filmStorage.getFilm(filmId);
 
@@ -90,6 +95,7 @@ public class InMemoryLikeStorage {
         likesUser.put(filmId, likesUser.get(filmId) - 1);
         film.getLikes().remove(userId);
     }
+*/
 
     // Вывод популярных фильмов
     public List<Film> getPopular(Integer count) {
