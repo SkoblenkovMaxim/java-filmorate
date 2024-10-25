@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.model.genre.Genre;
 import ru.yandex.practicum.filmorate.model.rating.Rating;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 
 @Builder
 @Getter

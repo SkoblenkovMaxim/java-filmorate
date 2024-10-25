@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.model.film;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
