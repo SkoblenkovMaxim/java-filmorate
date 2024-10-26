@@ -4,6 +4,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -207,28 +208,27 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getSearch(String query, String by) {
         String modQuery = " WHERE ";
+        String param = "%" + query.toLowerCase() + "%";
+        List<String> paramQuery = new ArrayList<>();
 
-        int countParam = 0;
         if (by.toLowerCase().contains("director")) {
-            modQuery += "lower(directors.name) like '%" + query.toLowerCase() + "%'";
-            countParam += 1;
+            modQuery += "lower(directors.name) like ?";
+            paramQuery.add(param);
         }
 
         if (by.toLowerCase().contains("title")) {
-            if (countParam > 0) {
+            if (by.toLowerCase().contains("director")) {
                 modQuery += " OR ";
             }
-            modQuery += "lower(films.name) like '%" + query.toLowerCase() + "%'";
-            countParam += 1;
+            modQuery += "lower(films.name) like ?";
+            paramQuery.add(param);
         }
 
         modQuery += " ORDER BY L.cnt DESC ";
 
-        List<Film> films = jdbcTemplate.query(
+        return jdbcTemplate.query(
                 SEARCH_FILM_QUERY + modQuery,
-                FilmDbStorage::mapRow
-        );
-        return films;
+                FilmDbStorage::mapRow, paramQuery.toArray());
     }
 
 }
