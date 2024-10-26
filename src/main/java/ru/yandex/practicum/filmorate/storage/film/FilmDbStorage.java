@@ -8,14 +8,17 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import lombok.RequiredArgsConstructor;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.rating.Rating;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 @Repository
 @RequiredArgsConstructor
@@ -60,6 +63,7 @@ public class FilmDbStorage implements FilmStorage {
             WHERE fd.director_id = ?
             """;
 
+    @SuppressWarnings("all")
     private static final String FIND_FILMS_BY_USER_LIKES = """
             SELECT f.film_id
             FROM films f
@@ -67,6 +71,7 @@ public class FilmDbStorage implements FilmStorage {
             WHERE fl.user_id = ?
             """;
 
+    @SuppressWarnings("all")
     private static final String FIND_RECOMMEND_FILMS_BY_USER_ID = """
             SELECT f.film_id
             FROM films f
@@ -83,7 +88,44 @@ public class FilmDbStorage implements FilmStorage {
                 )
             """;
 
+    @SuppressWarnings("all")
+/*    private static final String FIND_COMMON_FILMS = """
+                SELECT f.*
+                FROM films f
+                WHERE f.film_id IN (
+                    SELECT fl1.film_id
+                    FROM film_likes fl1
+                    JOIN film_likes fl2 ON fl1.film_id = fl2.film_id
+                    WHERE fl1.user_id = ? AND fl2.user_id = ?
+                )
+                ORDER BY (
+                    SELECT COUNT(*)
+                    FROM film_likes fl
+                    WHERE fl.film_id = f.film_id
+                ) DESC
+            """;*/
+
+    private static final String FIND_COMMON_FILMS = """
+           SELECT f.*
+           FROM films f
+           WHERE f.film_id IN (
+               SELECT fl1.film_id
+               FROM film_likes fl1
+               WHERE fl1.user_id = ?
+               INTERSECT
+               SELECT fl2.film_id
+               FROM film_likes fl2
+               WHERE fl2.user_id = ?
+           )
+           ORDER BY (
+               SELECT COUNT(*)
+               FROM film_likes fl
+               WHERE fl.film_id = f.film_id
+           ) DESC;
+           """;
+
     private final JdbcTemplate jdbcTemplate;
+    private final UserStorage userStorage;
 
     @Override
     public Film saveFilm(Film film) {
@@ -174,6 +216,14 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.queryForList(FIND_FILMS_BY_USER_LIKES,
                 Long.class,
                 userId);
+    }
+
+    @Override
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        if (userStorage.getUserById(userId) == null || userStorage.getUserById(friendId) == null) {
+            throw new NotFoundException("User not found");
+        }
+        return jdbcTemplate.query(FIND_COMMON_FILMS, FilmDbStorage::mapRow, userId, friendId);
     }
 
     @Override
