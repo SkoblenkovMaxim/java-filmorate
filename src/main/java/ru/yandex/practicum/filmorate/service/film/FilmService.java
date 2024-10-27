@@ -88,6 +88,7 @@ public class FilmService {
                 .getAllLikes()
                 .stream()
                 .map(like -> filmMapper.toFilmDto(filmStorage.getFilm(like.getFilmId())))
+                .limit(count)
                 .collect(Collectors.toList());
     }
 
@@ -218,6 +219,15 @@ public class FilmService {
             });
         }
 
+        return films.stream()
+                .map(filmMapper::toFilmDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<FilmDto> getSearch(String query, String by) {
+        List<Film> films = filmStorage.getSearch(query, by);
+
+        films.forEach(this::fillFilmAdditionalInfo);
         return films.stream()
                 .map(filmMapper::toFilmDto)
                 .collect(Collectors.toList());
