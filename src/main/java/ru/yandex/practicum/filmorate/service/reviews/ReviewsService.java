@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.service.user.UserService;
 import ru.yandex.practicum.filmorate.storage.reviews.ReviewsStorage;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -36,41 +37,38 @@ public class ReviewsService {
     public ReviewsDto addReviews(ReviewsDto reviewsDto) {
         Reviews reviews = reviewsMapper.toReviews(reviewsDto);
 
-        //checkAddReviews(reviews);
+        // Установлено ноль по умолчанию при создании отзыва
+        reviews.setUseful(reviewsStorage.setUsefulScore(reviews.getReviewId()));
+
+        if (reviews.getIsPositive()) {
+            reviewsStorage.addLike(reviews.getFilmId(), reviews.getUserId());
+        } else {
+            reviewsStorage.addDislike(reviews.getFilmId(), reviews.getUserId());
+        }
+
+        if (filmService.getFilm(reviews.getFilmId()) == null) {
+            throw new NotFoundException("Фильм не найден");
+        }
+
+        if (userService.getUserById(reviews.getUserId()) == null) {
+            throw new NotFoundException("Пользователь не найден");
+        }
 
         Reviews rev = reviewsStorage.addReviews(reviews);
 
-        if (reviews != null) {
-
-            if (reviews.getIsPositive() != null) {
-                if (reviews.getIsPositive()) {
-                    reviewsStorage.addLike(reviews.getFilmId(), reviews.getUserId());
-                } else {
-                    reviewsStorage.addDislike(reviews.getFilmId(), reviews.getUserId());
-                }
-            } else {
-                throw new ValidationException("Оценка отзыва не может быть пустой");
-            }
-
-            // Установлено ноль по умолчанию при создании отзыва
-            rev.setUseful(0);
-
-            return reviewsMapper.toReviewsDto(rev);
-        }
-
-        throw new ValidationException("Отзыв не может быть пустым");
+        return reviewsMapper.toReviewsDto(rev);
     }
 
     public ReviewsDto updateReviews(ReviewsDto reviewsDto) {
         Reviews reviews = reviewsMapper.toReviews(reviewsDto);
 
-        Reviews reviewsFromDb = reviewsStorage.getReviews(reviews.getReviewId());
+        reviews.setUseful(reviewsStorage.setUsefulScore(reviews.getReviewId()));
 
-        if (reviewsFromDb != null) {
-            return reviewsMapper.toReviewsDto(reviewsStorage.updateReviews(reviews));
-        } else {
-            throw new ValidationException("Отзыв не найден");
-        }
+        Reviews reviewsFromDb = reviewsStorage.getReviews(reviews.getReviewId());
+        reviewsFromDb.setContent(reviews.getContent());
+        reviewsFromDb.setIsPositive(reviews.getIsPositive());
+
+        return reviewsMapper.toReviewsDto(reviewsStorage.updateReviews(reviewsFromDb));
     }
 
     public void deleteReviews(Long id) {
@@ -78,34 +76,50 @@ public class ReviewsService {
     }
 
     public ReviewsDto getReviews(Long id) {
-        return reviewsMapper.toReviewsDto(reviewsStorage.getReviews(id));
+
+        if (reviewsMapper.toReviewsDto(reviewsStorage.getReviews(id)) != null) {
+            return reviewsMapper.toReviewsDto(reviewsStorage.getReviews(id));
+        }
+        throw new NotFoundException("Отзыв не найден");
     }
 
     public List<Reviews> getReviewsByFilmId(Long filmId, Long count) {
-        return reviewsStorage.getReviewsByFilmId(filmId, count);
+
+        List<Reviews> reviews;
+
+        if (filmId == null) {
+            reviews = reviewsStorage.getAllReviews();
+        } else {
+            reviews = reviewsStorage.getReviewsByFilmId(filmId);
+        }
+
+        if (reviews.size() > count) {
+            reviews = reviews.stream().limit(count).collect(Collectors.toList());
+        }
+
+        return reviews;
     }
 
     public void addLike(Long id, Long userId) {
 
-        // Проверка наличия лайка пользователя
-        if (reviewsStorage.getReviews(id).getUserId() != null) {
-            throw new ValidationException("Пользователь с userId " + userId + " уже оценил фильм с id " + id);
+        if (reviewsStorage.getReviews(id) != null) {
+            reviewsStorage.addLike(id, userId);
+        } else {
+            throw new NotFoundException("Отзыв не найден");
         }
-        reviewsStorage.addLike(id, userId);
     }
 
     public void addDislike(Long id, Long userId) {
 
-        // Проверка наличия дизлайка пользователя
-        if (reviewsStorage.getReviews(id).getUserId() != null) {
-            throw new ValidationException("Пользователь с userId " + userId + " уже оценил фильм с id " + id);
+        if (reviewsStorage.getReviews(id) != null) {
+            reviewsStorage.addDislike(id, userId);
+        } else {
+            throw new NotFoundException("Отзыв не найден");
         }
-        reviewsStorage.addDislike(id, userId);
     }
 
     public void deleteLike(Long id, Long userId) {
 
-        // Проверка наличия лайка пользователя
         if (reviewsStorage.getReviews(id).getUserId() == null) {
             throw new ValidationException("Пользователь с userId " + userId + " уже оценил фильм с id " + id);
         }
@@ -119,45 +133,5 @@ public class ReviewsService {
             throw new ValidationException("Пользователь с userId " + userId + " уже оценил фильм с id " + id);
         }
         reviewsStorage.deleteDislike(id, userId);
-    }
-
-    public void checkAddReviews(Reviews reviews) {
-
-        log.debug("Начало проверки отзыва...");
-        // Проверка контента
-        log.debug("Проверка контента отзыва");
-        if (reviews.getContent() == null || reviews.getContent().isBlank()) {
-            throw new ValidationException("Отзыв не может быть пустым");
-        }
-
-        // Проверка положительности отзыва
-        log.debug("Проверка положительности отзыва");
-        if (reviews.getIsPositive() == null) {
-            throw new ValidationException("Отзыв должен быть положительным или отрицательным");
-        }
-
-        // Проверка фильма
-        log.debug("Проверка фильма отзыва");
-        if (reviews.getFilmId() == null || filmService.getFilm(reviews.getFilmId()) == null) {
-            throw new NotFoundException("Фильм не найден");
-        }
-
-        // Проверка пользователя
-        log.debug("Проверка пользователя отзыва");
-        if (reviews.getUserId() == null || userService.getUserById(reviews.getUserId()) == null) {
-            throw new NotFoundException("Пользователь не найден");
-        }
-
-        // Проверка наличия отзыва
-        log.debug("Проверка наличия отзыва");
-        if (reviewsStorage.getReviews(reviews.getReviewId()) != null) {
-            throw new ValidationException("Отзыв с таким id уже существует");
-        }
-
-        // Проверка наличия пользователя в отзывах
-        log.debug("Проверка наличия пользователя в отзывах");
-        if (reviewsStorage.getReviews(reviews.getReviewId()).getUserId() != null) {
-            throw new ValidationException("Пользователь уже оставил отзыв");
-        }
     }
 }

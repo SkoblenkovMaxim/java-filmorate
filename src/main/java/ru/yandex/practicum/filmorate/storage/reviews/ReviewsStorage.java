@@ -14,7 +14,7 @@ public interface ReviewsStorage {
 
     Reviews getReviews(long idReviews);
 
-    List<Reviews> getReviewsByFilmId(Long idFilm, Long count);
+    List<Reviews> getReviewsByFilmId(Long idFilm);
 
     void addLike(Long idReviews, Long idUser);
 
@@ -23,4 +23,8 @@ public interface ReviewsStorage {
     void deleteLike(Long idReviews, Long idUser);
 
     void deleteDislike(Long idReviews, Long idUser);
+
+    Integer setUsefulScore(Long idReviews);
+
+    List<Reviews> getAllReviews();
 }

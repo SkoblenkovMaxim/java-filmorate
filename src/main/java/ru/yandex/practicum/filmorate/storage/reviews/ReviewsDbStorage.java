@@ -5,7 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.reviews.Reviews;
 
 import java.sql.PreparedStatement;
@@ -43,6 +43,8 @@ public class ReviewsDbStorage implements ReviewsStorage {
 
         var key = Objects.requireNonNull(keyHolder.getKey()).longValue();
 
+        reviews.setReviewId(key);
+
         return Reviews.builder()
                 .reviewId(key)
                 .content(reviews.getContent())
@@ -60,7 +62,7 @@ public class ReviewsDbStorage implements ReviewsStorage {
                     "UPDATE reviews SET content = ?, is_positive = ? WHERE review_id = ?");
             stmt.setString(1, reviews.getContent());
             stmt.setBoolean(2, reviews.getIsPositive());
-            stmt.setLong(3, reviews.getReviewId());
+            stmt.setLong(3, reviews.getUseful());
             return stmt;
         });
         return Reviews.builder()
@@ -69,6 +71,7 @@ public class ReviewsDbStorage implements ReviewsStorage {
                 .isPositive(reviews.getIsPositive())
                 .userId(reviews.getUserId())
                 .filmId(reviews.getFilmId())
+                .useful(reviews.getUseful())
                 .build();
     }
 
@@ -89,25 +92,20 @@ public class ReviewsDbStorage implements ReviewsStorage {
                         ReviewsDbStorage::mapRowReviews)
                 .stream()
                 .findFirst()
-                .orElseThrow(() -> new ValidationException("Отзыв с id " + idReviews + " не найден"));
+                .orElseThrow(() -> new NotFoundException("Отзыв с id " + idReviews + " не найден"));
     }
 
     @Override
-    public List<Reviews> getReviewsByFilmId(Long idFilm, Long count) {
+    public List<Reviews> getReviewsByFilmId(Long idFilm) {
 
-        if (idFilm == null || idFilm.describeConstable().isEmpty()) {
-            return jdbcTemplate.query("SELECT * FROM reviews",
-                    ReviewsDbStorage::mapRowReviews,
-                    idFilm);
-        } else if (count.describeConstable().isEmpty()) {
-            return jdbcTemplate.query("SELECT * FROM reviews WHERE film_id = ? LIMIT 10",
-                    new Object[]{idFilm},
-                    ReviewsDbStorage::mapRowReviews);
-        } else {
-            return jdbcTemplate.query("SELECT * FROM reviews WHERE film_id = ?",
-                    new Object[]{idFilm, count},
-                    ReviewsDbStorage::mapRowReviews);
-        }
+        return jdbcTemplate.query("SELECT * FROM reviews WHERE film_id = ? ORDER BY useful DESC",
+                ReviewsDbStorage::mapRowReviews,
+                idFilm);
+    }
+
+    public List<Reviews> getAllReviews() {
+        return jdbcTemplate.query("SELECT * FROM reviews",
+                ReviewsDbStorage::mapRowReviews);
     }
 
     @Override
@@ -158,9 +156,10 @@ public class ReviewsDbStorage implements ReviewsStorage {
         setUsefulScore(idReviews);
     }
 
-    public void setUsefulScore(Long idReviews) {
+    @Override
+    public Integer setUsefulScore(Long idReviews) {
 
-        jdbcTemplate.update(QUERY_TO_SET_USEFUL, idReviews, idReviews);
+        return jdbcTemplate.update(QUERY_TO_SET_USEFUL, idReviews, idReviews, idReviews);
     }
 
     private static Reviews mapRowReviews(ResultSet rs, int rowNum) throws SQLException {
@@ -170,6 +169,7 @@ public class ReviewsDbStorage implements ReviewsStorage {
                 .isPositive(rs.getBoolean("is_positive"))
                 .userId(rs.getLong("user_id"))
                 .filmId(rs.getLong("film_id"))
+                .useful(rs.getInt("useful"))
                 .build();
     }
 }
