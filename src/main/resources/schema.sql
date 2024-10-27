@@ -5,6 +5,9 @@ DROP TABLE IF EXISTS film_likes CASCADE;
 DROP TABLE IF EXISTS friends CASCADE;
 DROP TABLE IF EXISTS film_genres CASCADE;
 DROP TABLE IF EXISTS genres CASCADE;
+DROP TABLE IF EXISTS reviews CASCADE;
+DROP TABLE IF EXISTS reviews_likes CASCADE;
+DROP TABLE IF EXISTS reviews_dislikes CASCADE;
 
 CREATE TABLE IF NOT EXISTS films (
     film_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -51,4 +54,25 @@ CREATE TABLE IF NOT EXISTS film_genres (
 CREATE TABLE IF NOT EXISTS genres (
     genre_id INT NOT NULL PRIMARY KEY,
     name VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS reviews(
+    review_id  INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    content    VARCHAR(255),
+    is_positive BOOL,
+    user_id    INT,
+    film_id    INT,
+    useful     INT
+);
+
+CREATE TABLE IF NOT EXISTS reviews_likes (
+    reviews_like_id  INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    review_id INT,
+    user_id INT
+);
+
+CREATE TABLE IF NOT EXISTS reviews_dislikes (
+    reviews_dislike_id  INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    review_id INT,
+    user_id INT
 );
