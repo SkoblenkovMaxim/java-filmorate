@@ -224,6 +224,15 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
+    public List<FilmDto> getSearch(String query, String by) {
+        List<Film> films = filmStorage.getSearch(query, by);
+
+        films.forEach(this::fillFilmAdditionalInfo);
+        return films.stream()
+                .map(filmMapper::toFilmDto)
+                .collect(Collectors.toList());
+    }
+
     private void fillFilmAdditionalInfo(Film film) {
         Rating rating = ratingStorage.getRatingById(film.getMpa().getId());
         if (rating != null) {
