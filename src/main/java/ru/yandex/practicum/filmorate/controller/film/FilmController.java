@@ -67,7 +67,7 @@ public class FilmController {
 
     @GetMapping("/director/{directorId}")
     public List<FilmDto> getFilmsByDirector(@PathVariable Long directorId,
-            @RequestParam("sortBy") String sortBy) {
+                                            @RequestParam("sortBy") String sortBy) {
         return filmService.getFilmsByDirector(directorId, sortBy);
     }
 
@@ -76,6 +76,7 @@ public class FilmController {
     public List<FilmDto> getSearch(@RequestParam String query, @RequestParam String by) {
         return filmService.getSearch(query, by);
     }
+
     @GetMapping("/common")
     public List<FilmDto> getCommonFilms(
             @RequestParam("userId") @NotNull(message = "userId cannot be null") Long userId,
