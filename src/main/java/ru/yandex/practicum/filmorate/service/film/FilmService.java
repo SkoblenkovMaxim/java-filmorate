@@ -233,6 +233,15 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
+    public List<FilmDto> getCommonFilms(Long userId, Long friendId) {
+        List<Film> commonFilms = filmStorage.getCommonFilms(userId, friendId);
+        commonFilms.forEach(this::fillFilmAdditionalInfo);
+
+        return commonFilms.stream()
+                .map(filmMapper::toFilmDto)
+                .collect(Collectors.toList());
+    }
+
     private void fillFilmAdditionalInfo(Film film) {
         Rating rating = ratingStorage.getRatingById(film.getMpa().getId());
         if (rating != null) {
@@ -254,6 +263,4 @@ public class FilmService {
         List<Director> directors = directorStorage.getDirectorsByFilmId(film.getId());
         film.setDirectors(directors);
     }
-
-
 }

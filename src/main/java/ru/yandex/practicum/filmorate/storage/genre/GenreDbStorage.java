@@ -62,16 +62,6 @@ public class GenreDbStorage implements GenreStorage {
         return jdbcTemplate.query(GET_ALL_QUERY, GenreDbStorage::resultSetToGenre);
     }
 
-//    @Override
-//    public boolean isContains(Long id) {
-//        try {
-//            getGenreById(id);
-//            return true;
-//        } catch (Exception e) {
-//            return false;
-//        }
-//    }
-
     private static Genre resultSetToGenre(ResultSet rs, int rowNum) throws SQLException {
         return Genre.builder()
                 .id(rs.getLong("genre_id"))
