@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Objects;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Primary;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -19,6 +20,7 @@ import ru.yandex.practicum.filmorate.model.user.User;
 
 @Slf4j
 @Repository
+@Primary
 @RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
 

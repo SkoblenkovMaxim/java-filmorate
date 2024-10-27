@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.controller.film;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.film.FilmDto;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
@@ -14,6 +16,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/films")
+@Validated
 public class FilmController {
 
     private final FilmService filmService;
@@ -67,7 +70,7 @@ public class FilmController {
 
     @GetMapping("/director/{directorId}")
     public List<FilmDto> getFilmsByDirector(@PathVariable Long directorId,
-            @RequestParam("sortBy") String sortBy) {
+                                            @RequestParam("sortBy") String sortBy) {
         return filmService.getFilmsByDirector(directorId, sortBy);
     }
 
@@ -76,4 +79,12 @@ public class FilmController {
     public List<FilmDto> getSearch(@RequestParam String query, @RequestParam String by) {
         return filmService.getSearch(query, by);
     }
+
+    @GetMapping("/common")
+    public List<FilmDto> getCommonFilms(
+            @RequestParam("userId") @NotNull(message = "userId cannot be null") Long userId,
+            @RequestParam("friendId") @NotNull(message = "friendId cannot be null") Long friendId) {
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
 }

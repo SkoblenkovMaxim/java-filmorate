@@ -26,7 +26,7 @@ public class LikeDbStorage implements LikeStorage {
 
     @SuppressWarnings("all")
     private static final String DELETE_QUERY = """
-            DELETE FROM film_likes WHERE like_id = ? AND film_id = ?
+            DELETE FROM film_likes WHERE film_id = ? AND user_id = ?
             """;
 
     @SuppressWarnings("all")
