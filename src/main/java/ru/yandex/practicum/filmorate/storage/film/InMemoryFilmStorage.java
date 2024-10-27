@@ -99,6 +99,11 @@ public class InMemoryFilmStorage implements FilmStorage {
         return List.of();
     }
 
+    @Override
+    public List<Film> getSearch(String query, String by) {
+        return List.of();
+    }
+
     public boolean isValidFilm(Long filmId) {
         return films.containsKey(filmId);
     }
