@@ -79,16 +79,16 @@ public class FilmService {
         likeStorage.removeLike(filmId, userId);
     }
 
-    // вывод 10 наиболее популярных фильмов по количеству лайков
-    public List<FilmDto> getPopular(Integer count) {
-        if (count < 1) {
-            throw new ValidationException("Количество фильмов для вывода не должно быть меньше 1");
+    public List<FilmDto> getPopularFilms(Integer limit, Integer genreId, Integer year) {
+        if (limit < 1) {
+            throw new ValidationException("Количество фильмов для вывода должно быть больше 0");
         }
-        return likeStorage
-                .getAllLikes()
-                .stream()
-                .map(like -> filmMapper.toFilmDto(filmStorage.getFilm(like.getFilmId())))
-                .limit(count)
+
+        List<Film> films = filmStorage.getPopularFilms(limit, genreId, year);
+        films.forEach(this::fillFilmAdditionalInfo);
+
+        return films.stream()
+                .map(filmMapper::toFilmDto)
                 .collect(Collectors.toList());
     }
 
@@ -262,5 +262,7 @@ public class FilmService {
 
         List<Director> directors = directorStorage.getDirectorsByFilmId(film.getId());
         film.setDirectors(directors);
+
+        film.setLikeCount(likeStorage.getLikesCount(film.getId()));
     }
 }

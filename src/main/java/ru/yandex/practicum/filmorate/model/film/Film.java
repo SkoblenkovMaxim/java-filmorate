@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.model.genre.Genre;
 import ru.yandex.practicum.filmorate.model.rating.Rating;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 
 @Builder
 @Getter
@@ -25,7 +24,7 @@ public class Film {
     private LocalDate releaseDate; // дата релиза
     @Positive(message = "Продолжительность фильма не может быть отрицательным значением")
     private int duration; // продолжительность фильма
-    private Set<Long> likes;
+    private int likeCount;
     private Rating mpa; // рейтинг
     private List<Genre> genres; // жанр
     private List<Director> directors;

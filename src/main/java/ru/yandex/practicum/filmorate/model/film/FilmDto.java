@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.model.film;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
@@ -27,7 +26,7 @@ public class FilmDto {
     private LocalDate releaseDate; // дата релиза
     @Positive(message = "Продолжительность фильма не может быть отрицательным значением")
     private int duration; // продолжительность фильма
-    private Set<Long> likes;
+    private int likeCount;
     private Rating mpa; // рейтинг
     private List<Genre> genres; // жанр
     private List<Director> directors;

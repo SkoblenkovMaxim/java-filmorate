@@ -87,6 +87,18 @@ public class FilmDbStorage implements FilmStorage {
                 )
             """;
 
+    private static final String GET_POPULAR_FILMS_QUERY = """
+            SELECT f.*, COUNT(fl.like_id) AS likes
+            FROM films f
+            LEFT JOIN film_likes fl ON f.film_id = fl.film_id
+            LEFT JOIN film_genres fg ON f.film_id = fg.film_id
+            WHERE (fg.genre_id = ? OR ? IS NULL)
+                AND (YEAR(f.release_date) = ? OR ? IS NULL)
+            GROUP BY f.film_id
+            ORDER BY likes DESC
+            LIMIT ?
+            """;
+
     @SuppressWarnings("all")
     private static final String FIND_COMMON_FILMS = """
            SELECT f.*
@@ -224,6 +236,17 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.queryForList(FIND_RECOMMEND_FILMS_BY_USER_ID,
                 Long.class,
                 userId, userId);
+    }
+
+    @Override
+    public List<Film> getPopularFilms(Integer limit, Integer genreId, Integer year) {
+        Object[] params = {
+                genreId, genreId,
+                year, year,
+                limit
+        };
+
+        return jdbcTemplate.query(GET_POPULAR_FILMS_QUERY, FilmDbStorage::mapRow, params);
     }
 
     private static Film mapRow(ResultSet rs, int i) throws SQLException {
