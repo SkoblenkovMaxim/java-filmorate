@@ -117,7 +117,11 @@ public class ReviewsDbStorage implements ReviewsStorage {
             stmt.setLong(2, idUser);
             return stmt;
         });
+
+        deleteDislike(idReviews, idUser);
+
         setUsefulScore(idReviews);
+
     }
 
     @Override
@@ -129,7 +133,11 @@ public class ReviewsDbStorage implements ReviewsStorage {
             stmt.setLong(2, idUser);
             return stmt;
         });
+
+        deleteLike(idReviews, idUser);
+
         setUsefulScore(idReviews);
+
     }
 
     @Override
@@ -141,7 +149,9 @@ public class ReviewsDbStorage implements ReviewsStorage {
             stmt.setLong(2, idUser);
             return stmt;
         });
+
         setUsefulScore(idReviews);
+
     }
 
     @Override
@@ -153,7 +163,9 @@ public class ReviewsDbStorage implements ReviewsStorage {
             stmt.setLong(2, idUser);
             return stmt;
         });
+
         setUsefulScore(idReviews);
+
     }
 
     @Override
