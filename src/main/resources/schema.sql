@@ -5,9 +5,13 @@ DROP TABLE IF EXISTS film_likes CASCADE;
 DROP TABLE IF EXISTS friends CASCADE;
 DROP TABLE IF EXISTS film_genres CASCADE;
 DROP TABLE IF EXISTS genres CASCADE;
+DROP TABLE IF EXISTS reviews CASCADE;
+DROP TABLE IF EXISTS reviews_dislikes CASCADE;
+DROP TABLE IF EXISTS reviews_likes CASCADE;
+DROP TABLE IF EXISTS film_directors CASCADE;
 
 CREATE TABLE IF NOT EXISTS films (
-    film_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    film_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
     description TEXT(200),
     release_date DATE,
@@ -16,7 +20,7 @@ CREATE TABLE IF NOT EXISTS films (
 );
 
 CREATE TABLE IF NOT EXISTS users (
-    user_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     email VARCHAR(255),
     login VARCHAR(255),
     name VARCHAR(255),
@@ -30,20 +34,20 @@ CREATE TABLE IF NOT EXISTS ratings_mpa (
 );
 
 CREATE TABLE IF NOT EXISTS film_likes (
-    like_id  INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    like_id  INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     film_id  INT,
     user_id INT
 );
 
 CREATE TABLE IF NOT EXISTS friends (
-    friends_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    friends_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     user_id INT,
     friend_id INT,
     is_friend_status BOOLEAN
 );
 
 CREATE TABLE IF NOT EXISTS film_genres (
-    film_genres_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    film_genres_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     film_id INT,
     genre_id INT
 );
@@ -63,21 +67,26 @@ CREATE TABLE IF NOT EXISTS reviews(
 );
 
 CREATE TABLE IF NOT EXISTS reviews_likes (
-    reviews_like_id  INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    reviews_like_id  INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     review_id INT,
     user_id INT
 );
 
 CREATE TABLE IF NOT EXISTS reviews_dislikes (
-    reviews_dislike_id  INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    reviews_dislike_id  INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     review_id INT,
     user_id INT
 );
 
 CREATE TABLE IF NOT EXISTS film_directors
 (
-    film_director_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    film_director_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     film_id          INT,
     director_id      INT
 );
 
+CREATE TABLE IF NOT EXISTS directors
+(
+    director_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255)
+)
