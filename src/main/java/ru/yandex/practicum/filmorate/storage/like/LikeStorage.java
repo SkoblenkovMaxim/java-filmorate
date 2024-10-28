@@ -11,4 +11,6 @@ public interface LikeStorage {
     void removeLike(Long filmId, Long userId); // удаление пользователя
 
     List<Like> getAllLikes(); // Получение всех пользователей
+
+    int getLikesCount(Long filmId);
 }

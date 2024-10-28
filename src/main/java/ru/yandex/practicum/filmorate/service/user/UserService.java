@@ -10,10 +10,13 @@ import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.film.FilmDto;
+import ru.yandex.practicum.filmorate.model.film.FilmMapper;
 import ru.yandex.practicum.filmorate.model.friend.Friends;
 import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.model.user.UserDto;
 import ru.yandex.practicum.filmorate.model.user.UserMapper;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.friend.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -25,14 +28,20 @@ public class UserService {
 
     private final UserStorage userStorage;
     private final FriendStorage friendStorage;
+    private final FilmStorage filmStorage;
     private final UserMapper userMapper;
+    private final FilmMapper filmMapper;
 
     public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
+                       @Qualifier("filmDbStorage") FilmStorage filmStorage,
                        FriendStorage friendStorage,
-                       UserMapper userMapper) {
+                       UserMapper userMapper,
+                       FilmMapper filmMapper) {
         this.userStorage = userStorage;
+        this.filmStorage = filmStorage;
         this.friendStorage = friendStorage;
         this.userMapper = userMapper;
+        this.filmMapper = filmMapper;
     }
 
     public UserDto createUser(UserDto userDto) {
@@ -131,6 +140,22 @@ public class UserService {
         }
         log.debug("Пользователь с id={} не найден", userId);
         throw new NotFoundException("Пользователь с id=" + userId + " не найден");
+    }
+
+    public List<FilmDto> getUsersRecommendations(Long userId) {
+        if (!isValidUser(userId)) {
+            throw new NotFoundException("Пользователь с id=" + userId + " не найден");
+        }
+        List<Long> recommendUserFilms = filmStorage.getUsersRecommendations(userId);
+        log.info("Список фильмов пересечений");
+        List<Long> userFilms = filmStorage.getFilmsLikesByUser(userId);
+        log.info("Список фильмов, которые лайкнул пользователь {}", userId);
+        recommendUserFilms.removeAll(userFilms);
+        return recommendUserFilms
+                .stream()
+                .map(filmStorage::getFilm)
+                .map(filmMapper::toFilmDto)
+                .toList();
     }
 
     //Проверка наличия пользователя в хранилище

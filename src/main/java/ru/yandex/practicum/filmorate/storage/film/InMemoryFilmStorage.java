@@ -84,6 +84,36 @@ public class InMemoryFilmStorage implements FilmStorage {
         return films.values();
     }
 
+    @Override
+    public List<Long> getUsersRecommendations(Long userId) {
+        return List.of();
+    }
+
+    @Override
+    public List<Long> getFilmsLikesByUser(Long userId) {
+        return List.of();
+    }
+
+    @Override
+    public List<Film> getPopularFilms(Integer limit, Integer genreId, Integer year) {
+        return List.of();
+    }
+
+    @Override
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        return List.of();
+    }
+
+    @Override
+    public List<Film> getFilmsByDirector(Long directorId) {
+        return List.of();
+    }
+
+    @Override
+    public List<Film> getSearch(String query, String by) {
+        return List.of();
+    }
+
     public boolean isValidFilm(Long filmId) {
         return films.containsKey(filmId);
     }

@@ -5,9 +5,6 @@ DROP TABLE IF EXISTS film_likes CASCADE;
 DROP TABLE IF EXISTS friends CASCADE;
 DROP TABLE IF EXISTS film_genres CASCADE;
 DROP TABLE IF EXISTS genres CASCADE;
-DROP TABLE IF EXISTS reviews CASCADE;
-DROP TABLE IF EXISTS reviews_likes CASCADE;
-DROP TABLE IF EXISTS reviews_dislikes CASCADE;
 
 CREATE TABLE IF NOT EXISTS films (
     film_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -76,3 +73,11 @@ CREATE TABLE IF NOT EXISTS reviews_dislikes (
     review_id INT,
     user_id INT
 );
+
+CREATE TABLE IF NOT EXISTS film_directors
+(
+    film_director_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    film_id          INT,
+    director_id      INT
+);
+
