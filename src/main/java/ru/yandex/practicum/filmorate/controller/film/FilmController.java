@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.controller.film;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.film.FilmDto;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
@@ -14,6 +16,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/films")
+@Validated
 public class FilmController {
 
     private final FilmService filmService;
@@ -46,10 +49,13 @@ public class FilmController {
         filmService.removeLike(filmId, userId);
     }
 
-    //@GetMapping("/popular?count={count}")
     @GetMapping("/popular")
-    public List<FilmDto> getPopular(@Valid @RequestParam("count") Integer count) {
-        return filmService.getPopular(count);
+    public List<FilmDto> getPopularFilms(
+            @RequestParam(value = "count", defaultValue = "10") Integer count,
+            @RequestParam(value = "genreId", required = false) Integer genreId,
+            @RequestParam(value = "year", required = false) Integer year
+    ) {
+        return filmService.getPopularFilms(count, genreId, year);
     }
 
     @DeleteMapping("/{filmId}")
@@ -61,4 +67,24 @@ public class FilmController {
     public FilmDto getFilm(@Valid @PathVariable Long filmId) {
         return filmService.getFilm(filmId);
     }
+
+    @GetMapping("/director/{directorId}")
+    public List<FilmDto> getFilmsByDirector(@PathVariable Long directorId,
+                                            @RequestParam("sortBy") String sortBy) {
+        return filmService.getFilmsByDirector(directorId, sortBy);
+    }
+
+    //поиск GET /films/search?query=крад&by=director,title
+    @GetMapping("/search")
+    public List<FilmDto> getSearch(@RequestParam String query, @RequestParam String by) {
+        return filmService.getSearch(query, by);
+    }
+
+    @GetMapping("/common")
+    public List<FilmDto> getCommonFilms(
+            @RequestParam("userId") @NotNull(message = "userId cannot be null") Long userId,
+            @RequestParam("friendId") @NotNull(message = "friendId cannot be null") Long friendId) {
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
 }
