@@ -14,6 +14,8 @@ import ru.yandex.practicum.filmorate.storage.event.EventStorage;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -43,7 +45,7 @@ public class FriendDbStorage implements FriendStorage {
                 log.info("Added friend: {}", friendId);
                 return statement;
             });
-            createEvent(userId, friendId, EventOperation.ADD);
+           // createEvent(userId, friendId, EventOperation.ADD);
         }
 
         if (isFriendStatus(userId, friendId)) {
@@ -54,8 +56,9 @@ public class FriendDbStorage implements FriendStorage {
                 statement.setLong(2, friendId);
                 return statement;
             });
-            createEvent(userId, friendId, EventOperation.UPDATE);
+            //createEvent(userId, friendId, EventOperation.UPDATE);
         }
+        createEvent(userId, friendId, EventOperation.ADD);
     }
 
     @SuppressWarnings("all")
@@ -127,10 +130,10 @@ public class FriendDbStorage implements FriendStorage {
     private void createEvent(Long userId, Long friendId, EventOperation eventOperation) {
         Event event = Event.builder()
                 .eventType(EventType.FRIEND)
-                .eventOperation(eventOperation)
+                .operation(eventOperation)
                 .entityId(friendId)
                 .userId(userId)
-                .timestamp(LocalDateTime.now())
+                .timestamp(Timestamp.from(Instant.now()).getTime())
                 .build();
         eventStorage.addEvent(event);
     }

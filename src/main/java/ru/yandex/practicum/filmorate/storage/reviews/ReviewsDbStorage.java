@@ -6,11 +6,17 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.event.Event;
+import ru.yandex.practicum.filmorate.model.event.EventOperation;
+import ru.yandex.practicum.filmorate.model.event.EventType;
 import ru.yandex.practicum.filmorate.model.reviews.Reviews;
+import ru.yandex.practicum.filmorate.storage.event.EventStorage;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 
@@ -19,6 +25,7 @@ import java.util.Objects;
 public class ReviewsDbStorage implements ReviewsStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final EventStorage eventStorage;
 
     private static final String QUERY_TO_SET_USEFUL = "UPDATE reviews SET useful = ((SELECT COUNT(review_id) " +
             "FROM reviews_likes WHERE review_id = ?) - (SELECT COUNT(review_id) FROM reviews_dislikes " +
@@ -45,6 +52,8 @@ public class ReviewsDbStorage implements ReviewsStorage {
 
         reviews.setReviewId(key);
 
+        createEvent(reviews.getUserId(), reviews.getReviewId(), EventOperation.ADD);
+
         return Reviews.builder()
                 .reviewId(key)
                 .content(reviews.getContent())
@@ -65,6 +74,7 @@ public class ReviewsDbStorage implements ReviewsStorage {
             stmt.setLong(3, reviews.getUseful());
             return stmt;
         });
+        createEvent(reviews.getUserId(), reviews.getReviewId(), EventOperation.UPDATE);
         return Reviews.builder()
                 .reviewId(reviews.getReviewId())
                 .content(reviews.getContent())
@@ -77,6 +87,7 @@ public class ReviewsDbStorage implements ReviewsStorage {
 
     @Override
     public void deleteReviews(long idReviews) {
+        createEvent(getReviews(idReviews).getUserId(), idReviews, EventOperation.REMOVE);
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(
                     "DELETE FROM reviews WHERE review_id = ?");
@@ -97,7 +108,6 @@ public class ReviewsDbStorage implements ReviewsStorage {
 
     @Override
     public List<Reviews> getReviewsByFilmId(Long idFilm) {
-
         return jdbcTemplate.query("SELECT * FROM reviews WHERE film_id = ? ORDER BY useful DESC",
                 ReviewsDbStorage::mapRowReviews,
                 idFilm);
@@ -183,5 +193,16 @@ public class ReviewsDbStorage implements ReviewsStorage {
                 .filmId(rs.getLong("film_id"))
                 .useful(rs.getInt("useful"))
                 .build();
+    }
+
+    private void createEvent(Long userId, Long rewiewId, EventOperation eventOperation) {
+        Event event = Event.builder()
+                .eventType(EventType.REVIEW)
+                .operation(eventOperation)
+                .entityId(rewiewId)
+                .userId(userId)
+                .timestamp(Timestamp.from(Instant.now()).getTime())
+                .build();
+        eventStorage.addEvent(event);
     }
 }

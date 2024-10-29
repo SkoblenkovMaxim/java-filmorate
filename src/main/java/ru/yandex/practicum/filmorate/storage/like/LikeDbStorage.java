@@ -3,7 +3,8 @@ package ru.yandex.practicum.filmorate.storage.like;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -94,10 +95,10 @@ public class LikeDbStorage implements LikeStorage {
     private void createEvent(Long filmId, Long userId, EventOperation eventOperation) {
         Event event = Event.builder()
                 .eventType(EventType.LIKE)
-                .eventOperation(eventOperation)
+                .operation(eventOperation)
                 .entityId(filmId)
                 .userId(userId)
-                .timestamp(LocalDateTime.now())
+                .timestamp(Timestamp.from(Instant.now()).getTime())
                 .build();
         eventStorage.addEvent(event);
     }

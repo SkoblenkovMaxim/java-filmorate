@@ -3,8 +3,7 @@ package ru.yandex.practicum.filmorate.model.event;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 @AllArgsConstructor
 @Builder(toBuilder = true)
@@ -12,9 +11,8 @@ import java.time.LocalDateTime;
 public class Event {
     Long id;
     EventType eventType;
-    EventOperation eventOperation;
+    EventOperation operation;
     Long userId;
     Long entityId;
-    LocalDateTime timestamp;
+    Long timestamp;
 }
-
