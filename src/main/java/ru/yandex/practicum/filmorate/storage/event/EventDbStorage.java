@@ -15,7 +15,6 @@ import java.util.List;
 public class EventDbStorage implements EventStorage {
     private final JdbcTemplate jdbcTemplate;
 
-
     public EventDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -25,8 +24,6 @@ public class EventDbStorage implements EventStorage {
         String query = "SELECT * FROM events WHERE user_id = ?";
         return jdbcTemplate.query(query, this::mapEvent, userId);
     }
-
-
 
     @Override
     public void addEvent(Event event) {
@@ -41,15 +38,13 @@ public class EventDbStorage implements EventStorage {
     }
 
     private Event mapEvent(ResultSet rs, int rowNum) throws SQLException {
-        Timestamp timestamp = rs.getTimestamp("event_timestamp");
-        Long timestampMillis = timestamp != null ? timestamp.getTime() : null;
         return Event.builder()
                 .id(rs.getLong("event_id"))
                 .eventType(EventType.valueOf(rs.getString("event_type")))
                 .operation(EventOperation.valueOf(rs.getString("event_operation")))
                 .entityId(rs.getLong("entity_id"))
                 .userId(rs.getLong("user_id"))
-                .timestamp(timestampMillis)
+                .timestamp(rs.getTimestamp("event_timestamp").getTime())
                 .build();
     }
 }

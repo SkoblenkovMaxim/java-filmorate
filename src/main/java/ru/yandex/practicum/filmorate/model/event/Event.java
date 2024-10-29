@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.model.event;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import java.sql.Timestamp;
 
 @AllArgsConstructor
 @Builder(toBuilder = true)

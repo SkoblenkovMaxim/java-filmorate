@@ -99,7 +99,7 @@ public class ReviewsDbStorage implements ReviewsStorage {
     @Override
     public Reviews getReviews(long idReviews) {
         return jdbcTemplate.query("SELECT * FROM reviews WHERE review_id = ?",
-                new Object[]{idReviews},
+                        new Object[]{idReviews},
                         ReviewsDbStorage::mapRowReviews)
                 .stream()
                 .findFirst()

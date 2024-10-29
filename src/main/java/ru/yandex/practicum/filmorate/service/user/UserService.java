@@ -77,7 +77,6 @@ public class UserService {
 
     // добавление в друзья
     public void addFriends(Long userId, Long friendId) {
-
         checkIfFriend(userId, friendId);
         boolean isFriendStatus = friendStorage.isFriendStatus(userId, friendId);
         friendStorage.addFriend(userId, friendId, isFriendStatus);

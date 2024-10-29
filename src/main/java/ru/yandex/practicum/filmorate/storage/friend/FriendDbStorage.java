@@ -16,7 +16,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -45,7 +44,6 @@ public class FriendDbStorage implements FriendStorage {
                 log.info("Added friend: {}", friendId);
                 return statement;
             });
-           // createEvent(userId, friendId, EventOperation.ADD);
         }
 
         if (isFriendStatus(userId, friendId)) {
@@ -56,7 +54,6 @@ public class FriendDbStorage implements FriendStorage {
                 statement.setLong(2, friendId);
                 return statement;
             });
-            //createEvent(userId, friendId, EventOperation.UPDATE);
         }
         createEvent(userId, friendId, EventOperation.ADD);
     }
