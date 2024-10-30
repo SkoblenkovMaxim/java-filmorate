@@ -263,7 +263,7 @@ public class FilmService {
                     }
                 });
         genreList.sort(Comparator.comparing(Genre::getId));
-        film.setGenres(genreList);
+        film.setGenres(new HashSet<>(genreList).stream().toList());
 
         List<Director> directors = directorStorage.getDirectorsByFilmId(film.getId());
         film.setDirectors(directors);

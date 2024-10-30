@@ -101,23 +101,23 @@ public class FilmDbStorage implements FilmStorage {
 
     @SuppressWarnings("all")
     private static final String FIND_COMMON_FILMS = """
-           SELECT f.*
-           FROM films f
-           WHERE f.film_id IN (
-               SELECT fl1.film_id
-               FROM film_likes fl1
-               WHERE fl1.user_id = ?
-               INTERSECT
-               SELECT fl2.film_id
-               FROM film_likes fl2
-               WHERE fl2.user_id = ?
-           )
-           ORDER BY (
-               SELECT COUNT(*)
-               FROM film_likes fl
-               WHERE fl.film_id = f.film_id
-           ) DESC;
-           """;
+            SELECT f.*
+            FROM films f
+            WHERE f.film_id IN (
+                SELECT fl1.film_id
+                FROM film_likes fl1
+                WHERE fl1.user_id = ?
+                INTERSECT
+                SELECT fl2.film_id
+                FROM film_likes fl2
+                WHERE fl2.user_id = ?
+            )
+            ORDER BY (
+                SELECT COUNT(*)
+                FROM film_likes fl
+                WHERE fl.film_id = f.film_id
+            ) DESC;
+            """;
 
     @SuppressWarnings("all")
     private static final String SEARCH_FILM_QUERY = """
@@ -185,13 +185,21 @@ public class FilmDbStorage implements FilmStorage {
                 film.getMpa().getId(),
                 film.getId()
         );
-        return Film.builder()
-                .id(film.getId())
-                .name(film.getName())
-                .description(film.getDescription())
-                .releaseDate(film.getReleaseDate())
-                .duration(film.getDuration())
-                .build();
+        // 2. обновить жанры
+        // Удаляем существующие жанры фильма
+        String deleteGenresQuery = """
+                DELETE FROM film_genres
+                WHERE film_id = ?;
+                """;
+        jdbcTemplate.update(deleteGenresQuery, film.getId());
+        // Добавляем новые (обновленные) жанры фильма в БД
+        String insertGenresQuery = """
+                INSERT INTO film_genres (film_id, genre_id)
+                VALUES (?, ?);
+                """;
+        if (film.getGenres() != null)
+            film.getGenres().forEach(g -> jdbcTemplate.update(insertGenresQuery, film.getId(), g.getId()));
+        return film;
     }
 
     @Override
