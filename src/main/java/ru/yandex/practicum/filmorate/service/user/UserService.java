@@ -50,7 +50,7 @@ public class UserService {
 
     public UserDto createUser(UserDto userDto) {
         User user = userMapper.toUser(userDto);
-
+        user.setName(getDisplayedName(user));
         return userMapper.toUserDto(userStorage.createUser(user));
     }
 
@@ -72,7 +72,11 @@ public class UserService {
     }
 
     public UserDto getUserById(Long userId) {
-        return userMapper.toUserDto(userStorage.getUserById(userId));
+        User user = userStorage.getUserById(userId);
+        if (user == null) {
+            throw new NotFoundException("User " + userId + " is not found");
+        }
+        return userMapper.toUserDto(user);
     }
 
     public void removeUser(Long userId) {
@@ -196,5 +200,8 @@ public class UserService {
         if (!getUsers().contains(getUserById(friendId))) {
             throw new NotFoundException(format("User with id %d wasn't found", friendId));
         }
+    }
+    private String getDisplayedName(User user) {
+        return user.getName() != null && !user.getName().isBlank() ? user.getName() : user.getLogin();
     }
 }
