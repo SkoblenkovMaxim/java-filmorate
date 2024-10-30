@@ -3,18 +3,12 @@ package ru.yandex.practicum.filmorate.storage.like;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.List;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import lombok.RequiredArgsConstructor;
-import ru.yandex.practicum.filmorate.model.event.Event;
-import ru.yandex.practicum.filmorate.model.event.EventOperation;
-import ru.yandex.practicum.filmorate.model.event.EventType;
 import ru.yandex.practicum.filmorate.model.like.Like;
-import ru.yandex.practicum.filmorate.storage.event.EventStorage;
 
 @Repository
 @RequiredArgsConstructor
@@ -41,7 +35,6 @@ public class LikeDbStorage implements LikeStorage {
             """;
 
     private final JdbcTemplate jdbcTemplate;
-    private final EventStorage eventStorage;
 
     @Override
     public void createLike(Like like) {
@@ -52,7 +45,6 @@ public class LikeDbStorage implements LikeStorage {
             ps.setLong(2, like.getUserId());
             return ps;
         });
-        createEvent(like.getFilmId(), like.getUserId(), EventOperation.ADD);
     }
 
     @Override
@@ -63,7 +55,6 @@ public class LikeDbStorage implements LikeStorage {
             ps.setLong(2, userId);
             return ps;
         });
-        createEvent(filmId, userId, EventOperation.REMOVE);
     }
 
     @Override
@@ -91,16 +82,4 @@ public class LikeDbStorage implements LikeStorage {
                 .userId(rs.getLong("user_id"))
                 .build();
     }
-
-    private void createEvent(Long filmId, Long userId, EventOperation eventOperation) {
-        Event event = Event.builder()
-                .eventType(EventType.LIKE)
-                .operation(eventOperation)
-                .entityId(filmId)
-                .userId(userId)
-                .timestamp(Timestamp.from(Instant.now()).getTime())
-                .build();
-        eventStorage.addEvent(event);
-    }
-
 }

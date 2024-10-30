@@ -10,12 +10,14 @@ import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.event.EventOperation;
 import ru.yandex.practicum.filmorate.model.film.FilmDto;
 import ru.yandex.practicum.filmorate.model.film.FilmMapper;
 import ru.yandex.practicum.filmorate.model.friend.Friends;
 import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.model.user.UserDto;
 import ru.yandex.practicum.filmorate.model.user.UserMapper;
+import ru.yandex.practicum.filmorate.service.event.EventService;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.friend.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -31,17 +33,19 @@ public class UserService {
     private final FilmStorage filmStorage;
     private final UserMapper userMapper;
     private final FilmMapper filmMapper;
+    private final EventService eventService;
 
     public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
                        @Qualifier("filmDbStorage") FilmStorage filmStorage,
                        FriendStorage friendStorage,
                        UserMapper userMapper,
-                       FilmMapper filmMapper) {
+                       FilmMapper filmMapper, EventService eventService) {
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
         this.friendStorage = friendStorage;
         this.userMapper = userMapper;
         this.filmMapper = filmMapper;
+        this.eventService = eventService;
     }
 
     public UserDto createUser(UserDto userDto) {
@@ -80,16 +84,17 @@ public class UserService {
         checkIfFriend(userId, friendId);
         boolean isFriendStatus = friendStorage.isFriendStatus(userId, friendId);
         friendStorage.addFriend(userId, friendId, isFriendStatus);
+        eventService.createFriendEvent(userId, friendId, EventOperation.ADD);
     }
 
     // удаление из друзей
     public void deleteFriend(Long userId, Long friendId) {
-
         checkIfNotFriend(userId, friendId);
         if (friendStorage.isFriendStatus(userId, friendId)
                 || !getUsers().contains(getUserById(friendId))) {
             friendStorage.deleteFriend(userId, friendId);
         }
+        eventService.createFriendEvent(userId, friendId, EventOperation.REMOVE);
     }
 
     // вывод списка друзей

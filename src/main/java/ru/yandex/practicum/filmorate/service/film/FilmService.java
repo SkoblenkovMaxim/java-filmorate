@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.director.Director;
+import ru.yandex.practicum.filmorate.model.event.EventOperation;
 import ru.yandex.practicum.filmorate.model.film.FilmDto;
 import ru.yandex.practicum.filmorate.model.film.FilmMapper;
 import ru.yandex.practicum.filmorate.model.genre.FilmGenre;
@@ -14,6 +15,7 @@ import ru.yandex.practicum.filmorate.model.like.Like;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.genre.Genre;
 import ru.yandex.practicum.filmorate.model.rating.Rating;
+import ru.yandex.practicum.filmorate.service.event.EventService;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
@@ -38,15 +40,16 @@ public class FilmService {
     private final RatingStorage ratingStorage;
     private final DirectorStorage directorStorage;
     private final FilmMapper filmMapper;
+    private final EventService eventService;
 
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
-            @Qualifier("likeDbStorage") LikeStorage likeStorage,
-            @Qualifier("userDbStorage") UserStorage userStorage,
-            @Qualifier("genreDbStorage") GenreStorage genreStorage,
-            @Qualifier("ratingDbStorage") RatingStorage ratingStorage,
-            @Qualifier("directorDbStorage") DirectorStorage directorStorage,
-            FilmMapper filmMapper
-    ) {
+                       @Qualifier("likeDbStorage") LikeStorage likeStorage,
+                       @Qualifier("userDbStorage") UserStorage userStorage,
+                       @Qualifier("genreDbStorage") GenreStorage genreStorage,
+                       @Qualifier("ratingDbStorage") RatingStorage ratingStorage,
+                       @Qualifier("directorDbStorage") DirectorStorage directorStorage,
+                       FilmMapper filmMapper,
+                       EventService eventService) {
         this.filmStorage = filmStorage;
         this.likeStorage = likeStorage;
         this.userStorage = userStorage;
@@ -54,6 +57,7 @@ public class FilmService {
         this.ratingStorage = ratingStorage;
         this.directorStorage = directorStorage;
         this.filmMapper = filmMapper;
+        this.eventService = eventService;
     }
 
     // добавление лайка
@@ -72,10 +76,12 @@ public class FilmService {
         } else {
             throw new NotFoundException("Фильм c ID=" + filmId + " не найден!");
         }
+        eventService.createLikeEvent(filmId, userId, EventOperation.ADD);
     }
 
     // удаление лайка
     public void removeLike(Long filmId, Long userId) {
+        eventService.createLikeEvent(filmId, userId, EventOperation.REMOVE);
         likeStorage.removeLike(filmId, userId);
     }
 

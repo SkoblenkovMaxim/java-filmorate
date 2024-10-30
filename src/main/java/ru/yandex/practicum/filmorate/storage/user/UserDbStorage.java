@@ -34,7 +34,7 @@ public class UserDbStorage implements UserStorage {
     private static final String GET_BY_ID_QUERY = "SELECT * FROM users WHERE user_id = ?";
 
     @SuppressWarnings("all")
-    private static final String DELETE_FILM_BY_ID_QUERY = "DELETE FROM film WHERE film_id = ?";
+    private static final String DELETE_FILM_BY_ID_QUERY = "DELETE FROM films WHERE film_id = ?";
 
     @SuppressWarnings("all")
     private static final String UPDATE_QUERY = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE user_id = ?";

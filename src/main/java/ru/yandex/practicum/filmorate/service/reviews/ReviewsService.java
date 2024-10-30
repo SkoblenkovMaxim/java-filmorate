@@ -5,9 +5,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.event.EventOperation;
 import ru.yandex.practicum.filmorate.model.reviews.Reviews;
 import ru.yandex.practicum.filmorate.model.reviews.ReviewsDto;
 import ru.yandex.practicum.filmorate.model.reviews.ReviewsMapper;
+import ru.yandex.practicum.filmorate.service.event.EventService;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 import ru.yandex.practicum.filmorate.storage.reviews.ReviewsStorage;
@@ -22,15 +24,17 @@ public class ReviewsService {
     private final ReviewsStorage reviewsStorage;
     private final FilmService filmService;
     private final UserService userService;
+    private final EventService eventService;
     private final ReviewsMapper reviewsMapper;
 
     public ReviewsService(@Qualifier("reviewsDbStorage") ReviewsStorage reviewsStorage,
                           FilmService filmService,
                           UserService userService,
-                          ReviewsMapper reviewsMapper) {
+                          EventService eventService, ReviewsMapper reviewsMapper) {
         this.reviewsStorage = reviewsStorage;
         this.filmService = filmService;
         this.userService = userService;
+        this.eventService = eventService;
         this.reviewsMapper = reviewsMapper;
     }
 
@@ -53,9 +57,8 @@ public class ReviewsService {
         if (userService.getUserById(reviews.getUserId()) == null) {
             throw new NotFoundException("Пользователь не найден");
         }
-
         Reviews rev = reviewsStorage.addReviews(reviews);
-
+        eventService.createReviewEvent(rev.getUserId(), rev.getReviewId(), EventOperation.ADD);
         return reviewsMapper.toReviewsDto(rev);
     }
 
@@ -68,10 +71,16 @@ public class ReviewsService {
         reviewsFromDb.setContent(reviews.getContent());
         reviewsFromDb.setIsPositive(reviews.getIsPositive());
 
+        eventService.createReviewEvent(reviews.getUserId(), reviews.getReviewId(), EventOperation.UPDATE);
+
         return reviewsMapper.toReviewsDto(reviewsStorage.updateReviews(reviewsFromDb));
     }
 
     public void deleteReviews(Long id) {
+        Reviews review = reviewsMapper.toReviews(getReviews(id));
+
+        eventService.createReviewEvent(review.getUserId(), review.getReviewId(), EventOperation.REMOVE);
+
         reviewsStorage.deleteReviews(id);
     }
 
