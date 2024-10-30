@@ -15,7 +15,6 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class Film {
-
     private Long id; // целочисленный идентификатор
     @NotBlank(message = "Название фильма не может быть пустым")
     private String name; // название

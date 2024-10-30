@@ -152,7 +152,6 @@ public class FilmService {
 
     public FilmDto updateFilm(FilmDto filmDto) {
         Film film = filmMapper.toFilm(filmDto);
-        System.out.println(film);
 
         Film filmFromDb = filmStorage.getFilm(film.getId());
         if (filmFromDb == null) {
