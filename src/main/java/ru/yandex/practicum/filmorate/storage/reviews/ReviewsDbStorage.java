@@ -57,6 +57,14 @@ public class ReviewsDbStorage implements ReviewsStorage {
 
     @Override
     public Reviews updateReviews(Reviews reviews) {
+        Reviews oldReview = getReviews(reviews.getReviewId());
+
+        if(!oldReview.getIsPositive() && reviews.getIsPositive())  {
+            addLike(reviews.getReviewId(), reviews.getUserId());
+        } else if(oldReview.getIsPositive() && !reviews.getIsPositive()) {
+            addDislike(reviews.getReviewId(), reviews.getUserId());
+        }
+
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(
                     "UPDATE reviews SET content = ?, is_positive = ? WHERE review_id = ?");
@@ -65,6 +73,7 @@ public class ReviewsDbStorage implements ReviewsStorage {
             stmt.setLong(3, reviews.getReviewId());
             return stmt;
         });
+
         return Reviews.builder()
                 .reviewId(reviews.getReviewId())
                 .content(reviews.getContent())
@@ -83,6 +92,7 @@ public class ReviewsDbStorage implements ReviewsStorage {
             stmt.setLong(1, idReviews);
             return stmt;
         });
+
     }
 
     @Override
@@ -96,44 +106,23 @@ public class ReviewsDbStorage implements ReviewsStorage {
     }
 
     @Override
-    public List<Reviews> getReviewsByFilmId(Long idFilm, Long count) {
-
-        String queryWithFilm = "SELECT * FROM reviews WHERE film_id = ? ORDER BY useful DESC LIMIT ?";
-        String queryWithoutFilm = "SELECT * FROM reviews ORDER BY useful DESC LIMIT ?";
-        if (count == null) {
-            count = 10L;
-        }
-
-        if (idFilm == 0) {
-            return jdbcTemplate.query(queryWithoutFilm,
-                    ReviewsDbStorage::mapRowReviews,
-                    count);
-        }
-
-        return jdbcTemplate.query(queryWithFilm,
+    public List<Reviews> getReviewsByFilmId(Long idFilm) {
+        return jdbcTemplate.query("SELECT * FROM reviews WHERE film_id = ? ORDER BY useful",
                 ReviewsDbStorage::mapRowReviews,
-                idFilm,
-                count);
+                idFilm);
     }
 
     public List<Reviews> getAllReviews() {
-        return jdbcTemplate.query("SELECT * FROM reviews DESC",
+        return jdbcTemplate.query("SELECT * FROM reviews",
                 ReviewsDbStorage::mapRowReviews);
     }
 
     @Override
     public void addLike(Long idReviews, Long idUser) {
+        deleteDislike(idReviews, idUser);
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(
                     "INSERT INTO reviews_likes (review_id, user_id) VALUES (?, ?)");
-            stmt.setLong(1, idReviews);
-            stmt.setLong(2, idUser);
-            return stmt;
-        });
-
-        jdbcTemplate.update(connection -> {
-            PreparedStatement stmt = connection.prepareStatement(
-                    "DELETE FROM reviews_dislikes WHERE review_id = ? AND user_id = ?");
             stmt.setLong(1, idReviews);
             stmt.setLong(2, idUser);
             return stmt;
@@ -145,18 +134,10 @@ public class ReviewsDbStorage implements ReviewsStorage {
 
     @Override
     public void addDislike(Long idReviews, Long idUser) {
+        deleteLike(idReviews, idUser);
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(
                     "INSERT INTO reviews_dislikes (review_id, user_id) VALUES (?, ?)");
-            stmt.setLong(1, idReviews);
-            stmt.setLong(2, idUser);
-            return stmt;
-        });
-
-//        deleteLike(idReviews, idUser);
-        jdbcTemplate.update(connection -> {
-            PreparedStatement stmt = connection.prepareStatement(
-                    "DELETE FROM reviews_likes WHERE review_id = ? AND user_id = ?");
             stmt.setLong(1, idReviews);
             stmt.setLong(2, idUser);
             return stmt;
@@ -197,26 +178,6 @@ public class ReviewsDbStorage implements ReviewsStorage {
     public Integer setUsefulScore(Long idReviews) {
 
         return jdbcTemplate.update(QUERY_TO_SET_USEFUL, idReviews, idReviews, idReviews);
-    }
-
-    public final Reviews updateUsefulScore(Long idReviews) {
-
-        Integer score = setUsefulScore(idReviews);
-
-        Reviews reviews = Reviews.builder()
-                .reviewId(idReviews)
-                .useful(score)
-                .build();
-
-        jdbcTemplate.update(connection -> {
-            PreparedStatement stmt = connection.prepareStatement(
-                    "UPDATE reviews SET useful = ? WHERE review_id = ?");
-            stmt.setLong(3, reviews.getUseful());
-            return stmt;
-        });
-        return Reviews.builder()
-                .useful(reviews.getUseful())
-                .build();
     }
 
     private static Reviews mapRowReviews(ResultSet rs, int rowNum) throws SQLException {
