@@ -131,7 +131,6 @@ public class ReviewsDbStorage implements ReviewsStorage {
             return stmt;
         });
 
-//        deleteDislike(idReviews, idUser);
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(
                     "DELETE FROM reviews_dislikes WHERE review_id = ? AND user_id = ?");
