@@ -57,6 +57,14 @@ public class ReviewsDbStorage implements ReviewsStorage {
 
     @Override
     public Reviews updateReviews(Reviews reviews) {
+        Reviews oldReview = getReviews(reviews.getReviewId());
+
+        if(!oldReview.getIsPositive() && reviews.getIsPositive())  {
+            addLike(reviews.getReviewId(), reviews.getUserId());
+        } else if(oldReview.getIsPositive() && !reviews.getIsPositive()) {
+            addDislike(reviews.getReviewId(), reviews.getUserId());
+        }
+
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(
                     "UPDATE reviews SET content = ?, is_positive = ? WHERE review_id = ?");
@@ -65,6 +73,7 @@ public class ReviewsDbStorage implements ReviewsStorage {
             stmt.setLong(3, reviews.getReviewId());
             return stmt;
         });
+
         return Reviews.builder()
                 .reviewId(reviews.getReviewId())
                 .content(reviews.getContent())
@@ -83,6 +92,7 @@ public class ReviewsDbStorage implements ReviewsStorage {
             stmt.setLong(1, idReviews);
             return stmt;
         });
+
     }
 
     @Override
@@ -109,6 +119,7 @@ public class ReviewsDbStorage implements ReviewsStorage {
 
     @Override
     public void addLike(Long idReviews, Long idUser) {
+        deleteDislike(idReviews, idUser);
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(
                     "INSERT INTO reviews_likes (review_id, user_id) VALUES (?, ?)");
@@ -117,14 +128,13 @@ public class ReviewsDbStorage implements ReviewsStorage {
             return stmt;
         });
 
-        deleteDislike(idReviews, idUser);
-
         setUsefulScore(idReviews);
 
     }
 
     @Override
     public void addDislike(Long idReviews, Long idUser) {
+        deleteLike(idReviews, idUser);
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(
                     "INSERT INTO reviews_dislikes (review_id, user_id) VALUES (?, ?)");
@@ -132,8 +142,6 @@ public class ReviewsDbStorage implements ReviewsStorage {
             stmt.setLong(2, idUser);
             return stmt;
         });
-
-        deleteLike(idReviews, idUser);
 
         setUsefulScore(idReviews);
 
