@@ -99,7 +99,7 @@ public class ReviewsService {
         if (filmId == 0) {
             reviews = reviewsStorage.getAllReviews();
         } else {
-            reviews = reviewsStorage.getReviewsByFilmId(filmId);
+            reviews = reviewsStorage.getReviewsByFilmId(filmId, count);
         }
 
         if (reviews.size() > count) {

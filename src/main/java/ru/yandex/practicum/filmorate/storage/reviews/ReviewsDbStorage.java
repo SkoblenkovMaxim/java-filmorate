@@ -96,14 +96,28 @@ public class ReviewsDbStorage implements ReviewsStorage {
     }
 
     @Override
-    public List<Reviews> getReviewsByFilmId(Long idFilm) {
-        return jdbcTemplate.query("SELECT * FROM reviews WHERE film_id = ? ORDER BY useful",
+    public List<Reviews> getReviewsByFilmId(Long idFilm, Long count) {
+
+        String queryWithFilm = "SELECT * FROM reviews WHERE film_id = ? ORDER BY useful DESC LIMIT ?";
+        String queryWithoutFilm = "SELECT * FROM reviews ORDER BY useful DESC LIMIT ?";
+        if (count == null) {
+            count = 10L;
+        }
+
+        if (idFilm == 0) {
+            return jdbcTemplate.query(queryWithoutFilm,
+                    ReviewsDbStorage::mapRowReviews,
+                    count);
+        }
+
+        return jdbcTemplate.query(queryWithFilm,
                 ReviewsDbStorage::mapRowReviews,
-                idFilm);
+                idFilm,
+                count);
     }
 
     public List<Reviews> getAllReviews() {
-        return jdbcTemplate.query("SELECT * FROM reviews",
+        return jdbcTemplate.query("SELECT * FROM reviews DESC",
                 ReviewsDbStorage::mapRowReviews);
     }
 
@@ -117,7 +131,14 @@ public class ReviewsDbStorage implements ReviewsStorage {
             return stmt;
         });
 
-        deleteDislike(idReviews, idUser);
+//        deleteDislike(idReviews, idUser);
+        jdbcTemplate.update(connection -> {
+            PreparedStatement stmt = connection.prepareStatement(
+                    "DELETE FROM reviews_dislikes WHERE review_id = ? AND user_id = ?");
+            stmt.setLong(1, idReviews);
+            stmt.setLong(2, idUser);
+            return stmt;
+        });
 
         setUsefulScore(idReviews);
 
@@ -133,7 +154,14 @@ public class ReviewsDbStorage implements ReviewsStorage {
             return stmt;
         });
 
-        deleteLike(idReviews, idUser);
+//        deleteLike(idReviews, idUser);
+        jdbcTemplate.update(connection -> {
+            PreparedStatement stmt = connection.prepareStatement(
+                    "DELETE FROM reviews_likes WHERE review_id = ? AND user_id = ?");
+            stmt.setLong(1, idReviews);
+            stmt.setLong(2, idUser);
+            return stmt;
+        });
 
         setUsefulScore(idReviews);
 
@@ -170,6 +198,26 @@ public class ReviewsDbStorage implements ReviewsStorage {
     public Integer setUsefulScore(Long idReviews) {
 
         return jdbcTemplate.update(QUERY_TO_SET_USEFUL, idReviews, idReviews, idReviews);
+    }
+
+    public final Reviews updateUsefulScore(Long idReviews) {
+
+        Integer score = setUsefulScore(idReviews);
+
+        Reviews reviews = Reviews.builder()
+                .reviewId(idReviews)
+                .useful(score)
+                .build();
+
+        jdbcTemplate.update(connection -> {
+            PreparedStatement stmt = connection.prepareStatement(
+                    "UPDATE reviews SET useful = ? WHERE review_id = ?");
+            stmt.setLong(3, reviews.getUseful());
+            return stmt;
+        });
+        return Reviews.builder()
+                .useful(reviews.getUseful())
+                .build();
     }
 
     private static Reviews mapRowReviews(ResultSet rs, int rowNum) throws SQLException {

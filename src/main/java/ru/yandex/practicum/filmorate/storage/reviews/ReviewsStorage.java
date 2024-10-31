@@ -14,7 +14,7 @@ public interface ReviewsStorage {
 
     Reviews getReviews(long idReviews);
 
-    List<Reviews> getReviewsByFilmId(Long idFilm);
+    List<Reviews> getReviewsByFilmId(Long idFilm, Long count);
 
     void addLike(Long idReviews, Long idUser);
 
