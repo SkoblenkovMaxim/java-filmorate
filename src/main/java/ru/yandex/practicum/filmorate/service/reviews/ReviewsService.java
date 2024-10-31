@@ -128,8 +128,7 @@ public class ReviewsService {
     }
 
     public void deleteLike(Long id, Long userId) {
-
-        if (reviewsStorage.getReviews(id).getUserId() == null) {
+        if (reviewsStorage.getReviews(id).getUserId().equals(userId)) {
             throw new ValidationException("Пользователь с userId " + userId + " уже оценил фильм с id " + id);
         }
         reviewsStorage.deleteLike(id, userId);
@@ -138,7 +137,7 @@ public class ReviewsService {
     public void deleteDislike(Long id, Long userId) {
 
         // Проверка наличия дизлайка пользователя
-        if (reviewsStorage.getReviews(id).getUserId() == null) {
+        if (reviewsStorage.getReviews(id).getUserId().equals(userId)) {
             throw new ValidationException("Пользователь с userId " + userId + " уже оценил фильм с id " + id);
         }
         reviewsStorage.deleteDislike(id, userId);

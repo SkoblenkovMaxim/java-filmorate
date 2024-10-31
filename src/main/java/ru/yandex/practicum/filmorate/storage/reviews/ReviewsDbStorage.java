@@ -62,7 +62,7 @@ public class ReviewsDbStorage implements ReviewsStorage {
                     "UPDATE reviews SET content = ?, is_positive = ? WHERE review_id = ?");
             stmt.setString(1, reviews.getContent());
             stmt.setBoolean(2, reviews.getIsPositive());
-            stmt.setLong(3, reviews.getUseful());
+            stmt.setLong(3, reviews.getReviewId());
             return stmt;
         });
         return Reviews.builder()
