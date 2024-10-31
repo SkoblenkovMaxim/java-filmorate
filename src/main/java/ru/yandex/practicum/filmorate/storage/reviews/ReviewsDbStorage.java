@@ -168,6 +168,7 @@ public class ReviewsDbStorage implements ReviewsStorage {
 
     @Override
     public Integer setUsefulScore(Long idReviews) {
+
         return jdbcTemplate.update(QUERY_TO_SET_USEFUL, idReviews, idReviews, idReviews);
     }
 

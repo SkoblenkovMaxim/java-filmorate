@@ -96,7 +96,7 @@ public class ReviewsService {
 
         List<Reviews> reviews;
 
-        if (filmId == null) {
+        if (filmId == 0) {
             reviews = reviewsStorage.getAllReviews();
         } else {
             reviews = reviewsStorage.getReviewsByFilmId(filmId);
