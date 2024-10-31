@@ -24,7 +24,7 @@ public interface ReviewsStorage {
 
     void deleteDislike(Long idReviews, Long idUser);
 
-    Integer setUsefulScore(Long idReviews);
-
     List<Reviews> getAllReviews();
+
+    Integer calculateUseful(Long idReviews);
 }

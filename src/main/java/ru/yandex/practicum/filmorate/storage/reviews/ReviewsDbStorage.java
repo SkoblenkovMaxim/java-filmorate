@@ -20,29 +20,22 @@ public class ReviewsDbStorage implements ReviewsStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
-    private static final String QUERY_TO_SET_USEFUL = "UPDATE reviews SET useful = ((SELECT COUNT(review_id) " +
-            "FROM reviews_likes WHERE review_id = ?) - (SELECT COUNT(review_id) FROM reviews_dislikes " +
-            "WHERE review_id = ?)) WHERE review_id = ?;";
-
     @Override
     public Reviews addReviews(Reviews reviews) {
-
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(
-                    "INSERT INTO reviews (content, is_positive, user_id, film_id, useful) VALUES (?, ?, ?, ?, ?)",
+                    "INSERT INTO reviews (content, is_positive, user_id, film_id) VALUES (?, ?, ?, ?)",
                     new String[]{"review_id"});
             ps.setString(1, reviews.getContent());
             ps.setBoolean(2, reviews.getIsPositive());
             ps.setLong(3, reviews.getUserId());
             ps.setLong(4, reviews.getFilmId());
-            ps.setLong(5, reviews.getUseful());
             return ps;
         }, keyHolder);
 
         var key = Objects.requireNonNull(keyHolder.getKey()).longValue();
-
         reviews.setReviewId(key);
 
         return Reviews.builder()
@@ -51,37 +44,19 @@ public class ReviewsDbStorage implements ReviewsStorage {
                 .isPositive(reviews.getIsPositive())
                 .userId(reviews.getUserId())
                 .filmId(reviews.getFilmId())
-                .useful(reviews.getUseful())
                 .build();
     }
 
     @Override
     public Reviews updateReviews(Reviews reviews) {
-        Reviews oldReview = getReviews(reviews.getReviewId());
+        jdbcTemplate.update(
+                "UPDATE reviews SET content = ?, is_positive = ? WHERE review_id = ?",
+                reviews.getContent(),
+                reviews.getIsPositive(),
+                reviews.getReviewId()
+        );
 
-        if(!oldReview.getIsPositive() && reviews.getIsPositive())  {
-            addLike(reviews.getReviewId(), reviews.getUserId());
-        } else if(oldReview.getIsPositive() && !reviews.getIsPositive()) {
-            addDislike(reviews.getReviewId(), reviews.getUserId());
-        }
-
-        jdbcTemplate.update(connection -> {
-            PreparedStatement stmt = connection.prepareStatement(
-                    "UPDATE reviews SET content = ?, is_positive = ? WHERE review_id = ?");
-            stmt.setString(1, reviews.getContent());
-            stmt.setBoolean(2, reviews.getIsPositive());
-            stmt.setLong(3, reviews.getReviewId());
-            return stmt;
-        });
-
-        return Reviews.builder()
-                .reviewId(reviews.getReviewId())
-                .content(reviews.getContent())
-                .isPositive(reviews.getIsPositive())
-                .userId(reviews.getUserId())
-                .filmId(reviews.getFilmId())
-                .useful(reviews.getUseful())
-                .build();
+        return reviews;
     }
 
     @Override
@@ -92,7 +67,6 @@ public class ReviewsDbStorage implements ReviewsStorage {
             stmt.setLong(1, idReviews);
             return stmt;
         });
-
     }
 
     @Override
@@ -107,7 +81,7 @@ public class ReviewsDbStorage implements ReviewsStorage {
 
     @Override
     public List<Reviews> getReviewsByFilmId(Long idFilm) {
-        return jdbcTemplate.query("SELECT * FROM reviews WHERE film_id = ? ORDER BY useful",
+        return jdbcTemplate.query("SELECT * FROM reviews WHERE film_id = ?",
                 ReviewsDbStorage::mapRowReviews,
                 idFilm);
     }
@@ -127,9 +101,6 @@ public class ReviewsDbStorage implements ReviewsStorage {
             stmt.setLong(2, idUser);
             return stmt;
         });
-
-        setUsefulScore(idReviews);
-
     }
 
     @Override
@@ -142,9 +113,6 @@ public class ReviewsDbStorage implements ReviewsStorage {
             stmt.setLong(2, idUser);
             return stmt;
         });
-
-        setUsefulScore(idReviews);
-
     }
 
     @Override
@@ -156,9 +124,6 @@ public class ReviewsDbStorage implements ReviewsStorage {
             stmt.setLong(2, idUser);
             return stmt;
         });
-
-        setUsefulScore(idReviews);
-
     }
 
     @Override
@@ -170,14 +135,18 @@ public class ReviewsDbStorage implements ReviewsStorage {
             stmt.setLong(2, idUser);
             return stmt;
         });
-
-        setUsefulScore(idReviews);
     }
 
     @Override
-    public Integer setUsefulScore(Long idReviews) {
+    public Integer calculateUseful(Long idReviews) {
+        String query = """
+                SELECT
+                    (SELECT COUNT(*) FROM reviews_likes WHERE review_id = ?) -
+                    (SELECT COUNT(*) FROM reviews_dislikes WHERE review_id = ?)
+                    AS useful;
+                """;
 
-        return jdbcTemplate.update(QUERY_TO_SET_USEFUL, idReviews, idReviews, idReviews);
+        return jdbcTemplate.queryForObject(query, Integer.class, idReviews, idReviews);
     }
 
     private static Reviews mapRowReviews(ResultSet rs, int rowNum) throws SQLException {
@@ -187,7 +156,6 @@ public class ReviewsDbStorage implements ReviewsStorage {
                 .isPositive(rs.getBoolean("is_positive"))
                 .userId(rs.getLong("user_id"))
                 .filmId(rs.getLong("film_id"))
-                .useful(rs.getInt("useful"))
                 .build();
     }
 }
