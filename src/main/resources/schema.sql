@@ -64,8 +64,7 @@ CREATE TABLE IF NOT EXISTS reviews (
     content     VARCHAR(255),
     is_positive BOOL,
     user_id     INT,
-    film_id     INT,
-    useful      INT
+    film_id     INT
 );
 
 CREATE TABLE IF NOT EXISTS reviews_likes (

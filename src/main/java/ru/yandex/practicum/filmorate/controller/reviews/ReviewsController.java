@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.controller.reviews;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.reviews.Reviews;
 import ru.yandex.practicum.filmorate.model.reviews.ReviewsDto;
 import ru.yandex.practicum.filmorate.service.reviews.ReviewsService;
 
@@ -37,7 +36,7 @@ public class ReviewsController {
     }
 
     @GetMapping
-    public List<Reviews> getReviewsByFilmId(@Valid @RequestParam(defaultValue = "0") Long filmId,
+    public List<ReviewsDto> getReviewsByFilmId(@Valid @RequestParam(defaultValue = "0") Long filmId,
                                             @Valid @RequestParam(defaultValue = "10") Long count) {
         return reviewsService.getReviewsByFilmId(filmId, count);
     }
