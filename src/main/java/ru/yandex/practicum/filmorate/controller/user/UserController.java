@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller.user;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -70,7 +71,8 @@ public class UserController {
 
     @GetMapping("/{userId}/friends")
     public List<UserDto> getAllFriends(@Valid @PathVariable Long userId) {
-        return userService.getFriendsByUserId(userId);
+        List<UserDto> friends = userService.getFriendsByUserId(userId);
+        return friends.contains(null) ? Collections.emptyList() : friends;
     }
 
     @GetMapping("/{id}/friends/common/{friendId}")

@@ -77,7 +77,6 @@ public class ReviewsDbStorage implements ReviewsStorage {
 
     @Override
     public void deleteReviews(long idReviews) {
-       // createEvent(getReviews(idReviews).getUserId(), idReviews, EventOperation.REMOVE);
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(
                     "DELETE FROM reviews WHERE review_id = ?");
@@ -98,7 +97,7 @@ public class ReviewsDbStorage implements ReviewsStorage {
 
     @Override
     public List<Reviews> getReviewsByFilmId(Long idFilm) {
-        return jdbcTemplate.query("SELECT * FROM reviews WHERE film_id = ? ORDER BY useful DESC",
+        return jdbcTemplate.query("SELECT * FROM reviews WHERE film_id = ? ORDER BY useful",
                 ReviewsDbStorage::mapRowReviews,
                 idFilm);
     }
@@ -169,7 +168,6 @@ public class ReviewsDbStorage implements ReviewsStorage {
 
     @Override
     public Integer setUsefulScore(Long idReviews) {
-
         return jdbcTemplate.update(QUERY_TO_SET_USEFUL, idReviews, idReviews, idReviews);
     }
 
