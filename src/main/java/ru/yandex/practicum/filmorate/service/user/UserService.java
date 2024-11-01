@@ -222,6 +222,7 @@ public class UserService {
             throw new NotFoundException(format("User with id %d wasn't found", friendId));
         }
     }
+
     private String getDisplayedName(User user) {
         return user.getName() != null && !user.getName().isBlank() ? user.getName() : user.getLogin();
     }
