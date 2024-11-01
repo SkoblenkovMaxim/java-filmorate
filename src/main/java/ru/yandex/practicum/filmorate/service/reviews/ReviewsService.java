@@ -62,8 +62,7 @@ public class ReviewsService {
         reviewsFromDb.setIsPositive(reviews.getIsPositive());
 
         fillReviewAdditionalInfo(reviewsFromDb);
-        eventService.createReviewEvent(reviews.getUserId(), reviews.getReviewId(),
-                EventOperation.UPDATE);
+        eventService.createReviewEvent(reviewsFromDb.getUserId(), reviewsFromDb.getReviewId(), EventOperation.UPDATE);
 
         return reviewsMapper.toReviewsDto(reviewsStorage.updateReviews(reviewsFromDb));
     }
