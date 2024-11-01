@@ -33,6 +33,7 @@ public class EventDbStorage implements EventStorage {
         if(userStorage.getUserById(userId) == null) {
             throw new NotFoundException("User " + userId + " is not found");
         }
+
         String query = "SELECT * FROM events WHERE user_id = ?";
         return jdbcTemplate.query(query, this::mapEvent, userId);
     }
