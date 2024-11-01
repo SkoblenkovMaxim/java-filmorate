@@ -93,7 +93,7 @@ public class ReviewsService {
         }
 
         reviews.forEach(this::fillReviewAdditionalInfo);
-        
+
         reviews.sort((r1, r2) -> Integer.compare(r2.getUseful(), r1.getUseful()));
 
         if (reviews.size() > count) {
