@@ -30,7 +30,7 @@ public class EventDbStorage implements EventStorage {
     @Override
     public List<Event> getAllUserEvents(Long userId) {
 
-        if(userStorage.getUserById(userId) == null) {
+        if (userStorage.getUserById(userId) == null) {
 
             throw new NotFoundException("User " + userId + " is not found");
         }
@@ -77,7 +77,7 @@ public class EventDbStorage implements EventStorage {
 
     private void addEvent(Event event) {
 
-        if(userStorage.getUserById(event.getUserId()) == null) {
+        if (userStorage.getUserById(event.getUserId()) == null) {
 
             throw new NotFoundException("User " + event.getUserId() + " is not found");
         }
