@@ -76,6 +76,7 @@ public class FilmService {
         } else {
             throw new NotFoundException("Фильм c ID=" + filmId + " не найден!");
         }
+
         eventService.createLikeEvent(filmId, userId, EventOperation.ADD);
     }
 
