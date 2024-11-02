@@ -72,21 +72,34 @@ public class FilmController {
     @GetMapping("/director/{directorId}")
     public List<FilmDto> getFilmsByDirector(@PathVariable Long directorId,
                                             @RequestParam("sortBy") String sortBy) {
+        if (!("year".equals(sortBy) || "likes".equals(sortBy))) {
+            throw new IllegalArgumentException("Invalid value for 'by' parameter. Allowed 'director' and 'title'.");
+        }
         return filmService.getFilmsByDirector(directorId, sortBy);
     }
 
     //поиск GET /films/search?query=крад&by=director,title
     @GetMapping("/search")
-    public List<FilmDto> searchFilms(@RequestParam @NotBlank(message = "query param cannot be blank") String query,
-                                     @RequestParam @NotBlank(message = "by param cannot be blank") String by) {
+    public List<FilmDto> searchFilms(
+            @RequestParam @NotBlank(message = "query param cannot be blank") String query,
+            @RequestParam @NotBlank(message = "by param cannot be blank") String by
+    ) {
+        if (!isSearchParamCorrect(by)) {
+            throw new IllegalArgumentException("Invalid value for 'by' parameter. Allowed 'director' and 'title'.");
+        }
         return filmService.searchFilms(query, by);
     }
 
     @GetMapping("/common")
     public List<FilmDto> getCommonFilms(
             @RequestParam("userId") @NotNull(message = "userId cannot be null") Long userId,
-            @RequestParam("friendId") @NotNull(message = "friendId cannot be null") Long friendId) {
+            @RequestParam("friendId") @NotNull(message = "friendId cannot be null") Long friendId
+    ) {
         return filmService.getCommonFilms(userId, friendId);
     }
 
+    private boolean isSearchParamCorrect(String by) {
+        return "director".equals(by) || "title".equals(by) ||
+                "title,director".equals(by) || "director,title".equals(by);
+    }
 }

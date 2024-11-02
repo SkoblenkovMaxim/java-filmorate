@@ -5,7 +5,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.rating.Rating;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -233,9 +232,6 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getCommonFilms(Long userId, Long friendId) {
-        if (userStorage.getUserById(userId) == null || userStorage.getUserById(friendId) == null) {
-            throw new NotFoundException("User or friend not found");
-        }
         return jdbcTemplate.query(FIND_COMMON_FILMS, FilmDbStorage::mapRow, userId, friendId);
     }
 

@@ -1,19 +1,18 @@
 package ru.yandex.practicum.filmorate.service.film;
 
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.director.Director;
 import ru.yandex.practicum.filmorate.model.event.EventOperation;
+import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.film.FilmDto;
 import ru.yandex.practicum.filmorate.model.film.FilmMapper;
 import ru.yandex.practicum.filmorate.model.genre.FilmGenre;
-import ru.yandex.practicum.filmorate.model.like.Like;
-import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.genre.Genre;
+import ru.yandex.practicum.filmorate.model.like.Like;
 import ru.yandex.practicum.filmorate.model.rating.Rating;
 import ru.yandex.practicum.filmorate.service.event.EventService;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
@@ -240,6 +239,10 @@ public class FilmService {
     }
 
     public List<FilmDto> getCommonFilms(Long userId, Long friendId) {
+        if (userStorage.getUserById(userId) == null || userStorage.getUserById(friendId) == null) {
+            throw new NotFoundException("User or friend not found");
+        }
+
         List<Film> commonFilms = filmStorage.getCommonFilms(userId, friendId);
         commonFilms.forEach(this::fillFilmAdditionalInfo);
 
