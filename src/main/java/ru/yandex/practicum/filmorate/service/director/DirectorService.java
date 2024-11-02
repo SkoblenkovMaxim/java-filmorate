@@ -37,6 +37,7 @@ public class DirectorService {
 
     private Director getDirectorOrThrow(Long directorId) {
         Director director = directorStorage.getDirectorById(directorId);
+
         if (director == null) {
             throw new NotFoundException("Режиссер с ID " + directorId + " не найден");
         }
