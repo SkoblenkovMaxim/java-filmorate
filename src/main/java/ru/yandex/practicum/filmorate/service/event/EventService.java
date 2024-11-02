@@ -17,6 +17,7 @@ public class EventService {
     private final UserStorage userStorage;
 
     public List<Event> getAllUserEvents(Long userId) {
+
         if (userStorage.getUserById(userId) == null) {
             throw new NotFoundException("User " + userId + " is not found");
         }
@@ -39,6 +40,7 @@ public class EventService {
     }
 
     private void userValidCheck(Long userId) {
+
         if (userStorage.getUserById(userId) == null) {
             throw new NotFoundException("User " + userId + " is not found");
         }
