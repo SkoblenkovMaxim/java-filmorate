@@ -269,7 +269,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getSearch(String query, String by) {
+    public List<Film> searchFilms(String query, String by) {
         String modQuery = " WHERE ";
         String param = "%" + query.toLowerCase() + "%";
         List<String> paramQuery = new ArrayList<>();

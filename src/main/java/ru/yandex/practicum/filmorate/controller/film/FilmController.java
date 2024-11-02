@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller.film;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -76,8 +77,9 @@ public class FilmController {
 
     //поиск GET /films/search?query=крад&by=director,title
     @GetMapping("/search")
-    public List<FilmDto> getSearch(@RequestParam String query, @RequestParam String by) {
-        return filmService.getSearch(query, by);
+    public List<FilmDto> searchFilms(@RequestParam @NotBlank(message = "query param cannot be blank") String query,
+                                     @RequestParam @NotBlank(message = "by param cannot be blank") String by) {
+        return filmService.searchFilms(query, by);
     }
 
     @GetMapping("/common")

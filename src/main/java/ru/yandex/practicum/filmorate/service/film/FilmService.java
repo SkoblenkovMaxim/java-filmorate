@@ -230,8 +230,8 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
-    public List<FilmDto> getSearch(String query, String by) {
-        List<Film> films = filmStorage.getSearch(query, by);
+    public List<FilmDto> searchFilms(String query, String by) {
+        List<Film> films = filmStorage.searchFilms(query, by);
 
         films.forEach(this::fillFilmAdditionalInfo);
         return films.stream()
