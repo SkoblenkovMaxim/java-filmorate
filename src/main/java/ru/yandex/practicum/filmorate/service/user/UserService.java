@@ -98,7 +98,11 @@ public class UserService {
     }
 
     public void removeUser(Long userId) {
-        userStorage.removeUser(userId);
+        if (isValidUser(userId)) {
+            userStorage.removeUser(userId);
+        } else {
+            throw new NotFoundException("User " + userId + " is not found");
+        }
     }
 
     // добавление в друзья
