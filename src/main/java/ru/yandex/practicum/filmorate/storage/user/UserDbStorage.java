@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Objects;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Primary;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -15,10 +16,12 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import lombok.RequiredArgsConstructor;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.user.User;
 
 @Slf4j
 @Repository
+@Primary
 @RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
 
@@ -32,7 +35,7 @@ public class UserDbStorage implements UserStorage {
     private static final String GET_BY_ID_QUERY = "SELECT * FROM users WHERE user_id = ?";
 
     @SuppressWarnings("all")
-    private static final String DELETE_FILM_BY_ID_QUERY = "DELETE FROM film WHERE film_id = ?";
+    private static final String DELETE_USER_BY_ID_QUERY = "DELETE FROM users WHERE user_id = ?";
 
     @SuppressWarnings("all")
     private static final String UPDATE_QUERY = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE user_id = ?";
@@ -65,8 +68,11 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void removeUser(Long userId) {
+        if (getUserById(userId) == null) {
+            throw new NotFoundException("User " + userId + " is not found");
+        }
         jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(DELETE_FILM_BY_ID_QUERY);
+            PreparedStatement ps = connection.prepareStatement(DELETE_USER_BY_ID_QUERY);
             ps.setLong(1, userId);
             return ps;
         });

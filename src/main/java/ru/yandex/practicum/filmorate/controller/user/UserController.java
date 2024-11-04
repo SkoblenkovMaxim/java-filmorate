@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller.user;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,7 +15,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import ru.yandex.practicum.filmorate.model.event.Event;
+import ru.yandex.practicum.filmorate.model.film.FilmDto;
 import ru.yandex.practicum.filmorate.model.user.UserDto;
+import ru.yandex.practicum.filmorate.service.event.EventService;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 
 @Slf4j
@@ -23,9 +27,11 @@ import ru.yandex.practicum.filmorate.service.user.UserService;
 public class UserController {
 
     private final UserService userService;
+    private final EventService eventService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, EventService eventService) {
         this.userService = userService;
+        this.eventService = eventService;
     }
 
     @PostMapping
@@ -65,11 +71,22 @@ public class UserController {
 
     @GetMapping("/{userId}/friends")
     public List<UserDto> getAllFriends(@Valid @PathVariable Long userId) {
-        return userService.getFriendsByUserId(userId);
+        List<UserDto> friends = userService.getFriendsByUserId(userId);
+        return friends.contains(null) ? Collections.emptyList() : friends;
     }
 
     @GetMapping("/{id}/friends/common/{friendId}")
     public List<UserDto> getCommonFriends(@Valid @PathVariable Long id, @Valid @PathVariable Long friendId) {
         return userService.getCommonFriends(id, friendId);
+    }
+
+    @GetMapping("/{userId}/feed")
+    public List<Event> getAllUserEvents(@PathVariable Long userId) {
+        return eventService.getAllUserEvents(userId);
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public List<FilmDto> getUsersRecommendations(@PathVariable("id") long userId) {
+        return userService.getUsersRecommendations(userId);
     }
 }
